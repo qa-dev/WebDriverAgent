@@ -6,15 +6,8 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  */
+#import <UIKit/UIKit.h>
 
-#import <Foundation/Foundation.h>
-
-#import <WebDriverAgentLib/FBCommandHandler.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface FBInspectorCommands : NSObject <FBCommandHandler>
+@interface FBNavigationController : UINavigationController
 
 @end
-
-NS_ASSUME_NONNULL_END
