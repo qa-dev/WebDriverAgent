@@ -7,14 +7,18 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#import <Foundation/Foundation.h>
+#import "FBNavigationController.h"
 
-#import <WebDriverAgentLib/FBCommandHandler.h>
+@implementation FBNavigationController
 
-NS_ASSUME_NONNULL_BEGIN
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+{
+  return UIInterfaceOrientationMaskAll;
+}
 
-@interface FBInspectorCommands : NSObject <FBCommandHandler>
+- (BOOL)shouldAutorotate
+{
+  return YES;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

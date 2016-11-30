@@ -35,6 +35,7 @@
     [[FBRoute POST:@"/deactivateApp"] respondWithTarget:self action:@selector(handleDeactivateAppCommand:)],
     [[FBRoute POST:@"/timeouts"] respondWithTarget:self action:@selector(handleTimeouts:)],
     [[FBRoute POST:@"/timeouts/implicit_wait"] respondWithTarget:self action:@selector(handleTimeouts:)],
+    [[FBRoute POST:@"/setToPasteboard"] respondWithTarget:self action:@selector(handleSetToPasteboard:)],
   ];
 }
 
@@ -68,6 +69,15 @@
           @"value": @"200",
   };
   return FBResponseWithStatus(FBCommandStatusNoError, result);
+}
+
++ (id<FBResponsePayload>)handleSetToPasteboard:(FBRouteRequest *)request
+{
+  NSString *requestedText = request.arguments[@"value"];
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  pasteboard.string = requestedText;
+
+  return FBResponseWithOK();
 }
 
 @end
