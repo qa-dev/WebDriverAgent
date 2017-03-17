@@ -11,6 +11,7 @@
 #import "XCUIElement+AVFind.h"
 
 #import "XCUIElement+FBWebDriverAttributes.h"
+#import "FBElementTypeTransformer.h"
 
 @implementation XCUIElement (FBFind)
 
@@ -23,7 +24,7 @@
   NSArray *tokens = [self av_parseLocator:locator];
   NSError *error = nil;
   // Создаем регулярку для парсинга одной части локатора.
-  NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^(\\.{0,1})([0-9\\*]*)(\\(.+\\))*(\\[[0-9a-z]+\\]){0,1}$" options:NSRegularExpressionCaseInsensitive error:&error];
+  NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^(\\.{0,1})([A-Za-z\\*]*)(\\(.+\\))*(\\[[0-9a-z]+\\]){0,1}$" options:NSRegularExpressionCaseInsensitive error:&error];
 
   __block XCUIElement *currentElement = self;
   __block NSArray<XCUIElement *> *currentElements;
@@ -72,7 +73,9 @@
   if ([type isEqualToString:@"*"]) {
     elementType = XCUIElementTypeAny;
   } else {
-    elementType = [type intValue];
+    NSString *typeName = [@"XCUIElementType" stringByAppendingString:type];
+    elementType = [FBElementTypeTransformer elementTypeWithTypeName:typeName];
+//    elementType = [type intValue];
   }
 
   // Если в начале стоит точка, то мы берем ребенка, если нет, то потомка.
