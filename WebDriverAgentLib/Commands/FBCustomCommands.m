@@ -24,6 +24,8 @@
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIElement.h"
 #import "XCUIElementQuery.h"
+#import "XCUIDevice+AVHelpers.h"
+#import "FBErrorBuilder.h"
 
 @implementation FBCustomCommands
 
@@ -32,6 +34,8 @@
   return
   @[
     [[FBRoute POST:@"/homescreen"].withoutSession respondWithTarget:self action:@selector(handleHomescreenCommand:)],
+    [[FBRoute POST:@"/homescreenDoubleTap"].withoutSession respondWithTarget:self action:@selector(handleDoubleTapHomescreenCommand:)],
+    [[FBRoute POST:@"/openApp"].withoutSession respondWithTarget:self action:@selector(handleOpenAppCommand:)],
     [[FBRoute POST:@"/deactivateApp"] respondWithTarget:self action:@selector(handleDeactivateAppCommand:)],
     [[FBRoute POST:@"/timeouts"] respondWithTarget:self action:@selector(handleTimeouts:)],
     [[FBRoute POST:@"/timeouts/implicit_wait"] respondWithTarget:self action:@selector(handleTimeouts:)],
@@ -50,6 +54,27 @@
   }
   return FBResponseWithOK();
 }
+
+
++ (id<FBResponsePayload>)handleDoubleTapHomescreenCommand:(FBRouteRequest *)request
+{
+  if (![[XCUIDevice sharedDevice] av_doubleTapHomescreen]) {
+    NSError *error = [[[FBErrorBuilder builder] withDescriptionFormat:@"Can't double click on home button"] build];
+    return FBResponseWithError(error);
+  }
+  return FBResponseWithOK();
+}
+
++ (id<FBResponsePayload>)handleOpenAppCommand:(FBRouteRequest *)request
+{
+  NSString *applicationIdentifier = request.arguments[@"name"];
+  NSError *error;
+  if (![[FBSpringboardApplication fb_springboard] fb_tapApplicationWithIdentifier:applicationIdentifier error:&error]) {
+    return FBResponseWithError(error);
+  }
+  return FBResponseWithOK();
+}
+
 
 + (id<FBResponsePayload>)handleDeactivateAppCommand:(FBRouteRequest *)request
 {
