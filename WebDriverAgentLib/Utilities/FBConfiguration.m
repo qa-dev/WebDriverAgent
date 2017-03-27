@@ -19,6 +19,8 @@ BOOL _AXSAutomationSetFauxCollectionViewCellsEnabled(BOOL);
 static NSUInteger const DefaultStartingPort = 8100;
 static NSUInteger const DefaultPortRange = 100;
 
+static BOOL FBShouldUseTestManagerForVisibilityDetection = NO;
+
 @implementation FBConfiguration
 
 #pragma mark Public
@@ -43,18 +45,19 @@ static NSUInteger const DefaultPortRange = 100;
   return NSMakeRange(DefaultStartingPort, DefaultPortRange);
 }
 
-+ (BOOL)shouldListenOnUSB
-{
-#if TARGET_OS_SIMULATOR
-  return NO;
-#else
-  return YES;
-#endif
-}
-
 + (BOOL)verboseLoggingEnabled
 {
   return [NSProcessInfo.processInfo.environment[@"VERBOSE_LOGGING"] boolValue];
+}
+
++ (void)setShouldUseTestManagerForVisibilityDetection:(BOOL)value
+{
+  FBShouldUseTestManagerForVisibilityDetection = value;
+}
+
++ (BOOL)shouldUseTestManagerForVisibilityDetection
+{
+  return FBShouldUseTestManagerForVisibilityDetection;
 }
 
 #pragma mark Private
