@@ -26,6 +26,7 @@
 #import "XCUIElementQuery.h"
 #import "XCUIDevice+AVHelpers.h"
 #import "FBErrorBuilder.h"
+#import "FBRouteRequest-Private.h"
 
 @implementation FBCustomCommands
 
@@ -40,6 +41,8 @@
     [[FBRoute POST:@"/timeouts"] respondWithTarget:self action:@selector(handleTimeouts:)],
     [[FBRoute POST:@"/timeouts/implicit_wait"] respondWithTarget:self action:@selector(handleTimeouts:)],
     [[FBRoute POST:@"/setToPasteboard"] respondWithTarget:self action:@selector(handleSetToPasteboard:)],
+
+    [[FBRoute POST:@"/connectRunApp"] respondWithTarget:self action:@selector(handleRefreshSessionCommand:)],
   ];
 }
 
@@ -103,6 +106,12 @@
   pasteboard.string = requestedText;
 
   return FBResponseWithOK();
+}
+
++ (id<FBResponsePayload>)handleRefreshSessionCommand:(FBRouteRequest *)request
+{
+    [request.session refreshTestingApplication];
+    return FBResponseWithOK();
 }
 
 @end

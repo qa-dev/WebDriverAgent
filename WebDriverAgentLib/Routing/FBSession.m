@@ -70,12 +70,21 @@ static FBSession *_activeSession;
 {
   FBApplication *application = [FBApplication fb_activeApplication];
   const BOOL testedApplicationIsActiveAndNotRunning = (application.processID == self.testedApplication.processID && !application.running);
+  NSLog(@"%d", application.processID);
+  NSLog(@"%d", self.testedApplication.processID);
+
   if (testedApplicationIsActiveAndNotRunning) {
     [[NSException exceptionWithName:FBApplicationCrashedException reason:@"Application is not running, possibly crashed" userInfo:nil] raise];
   }
   [application query];
   [application resolve];
   return application;
+}
+
+- (FBApplication *)refreshTestingApplication
+{
+  self.testedApplication.processID = 0;
+  return self.testedApplication;
 }
 
 @end
