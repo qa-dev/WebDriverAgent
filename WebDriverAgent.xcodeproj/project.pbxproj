@@ -43,7 +43,9 @@
 		CAC5C0766C2D30A4F1F71888 /* XCUIElement+AVFind.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5C16FD2A508D0C75A5CF8 /* XCUIElement+AVFind.h */; };
 		CAC5C178D2ACA1C2732E844B /* AVKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = CAC5CED5CD622AA0A9F1C94D /* AVKeyboard.m */; };
 		CAC5C2CE4AC1BA4463B9B352 /* XCUIElement+AVTyping.m in Sources */ = {isa = PBXBuildFile; fileRef = CAC5CEE605760AC65756D89C /* XCUIElement+AVTyping.m */; };
+		CAC5C4D2B43DC77C3E53F727 /* XCUIDevice+AVHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = CAC5CF4BD2A5EFE521771628 /* XCUIDevice+AVHelpers.m */; };
 		CAC5C4EDFF0026859ED89D22 /* AVKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5CF5DE49AA9DB43EA8B1B /* AVKeyboard.h */; };
+		CAC5C5388B2E5E31D37BF2D2 /* XCUIDevice+AVHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5CF38ACD4BE65561A2D90 /* XCUIDevice+AVHelpers.h */; };
 		CAC5C8F54F65E173649BE6C3 /* XCUIElement+AVTyping.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5CA6B6DDCEC8169735C2B /* XCUIElement+AVTyping.h */; };
 		CAC5C990877767BAF9038A53 /* XCUIElement+AVTap.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5C7B2871F6954094F1B46 /* XCUIElement+AVTap.h */; };
 		CAC5CD690887EF06A0405A06 /* XCUIElement+AVTap.m in Sources */ = {isa = PBXBuildFile; fileRef = CAC5C1141C8EA20D755850DB /* XCUIElement+AVTap.m */; };
@@ -362,6 +364,8 @@
 		CAC5CA6B6DDCEC8169735C2B /* XCUIElement+AVTyping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIElement+AVTyping.h"; sourceTree = "<group>"; };
 		CAC5CED5CD622AA0A9F1C94D /* AVKeyboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVKeyboard.m; sourceTree = SOURCE_ROOT; };
 		CAC5CEE605760AC65756D89C /* XCUIElement+AVTyping.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+AVTyping.m"; sourceTree = "<group>"; };
+		CAC5CF38ACD4BE65561A2D90 /* XCUIDevice+AVHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIDevice+AVHelpers.h"; sourceTree = "<group>"; };
+		CAC5CF4BD2A5EFE521771628 /* XCUIDevice+AVHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIDevice+AVHelpers.m"; sourceTree = "<group>"; };
 		CAC5CF5DE49AA9DB43EA8B1B /* AVKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVKeyboard.h; sourceTree = SOURCE_ROOT; };
 		CAC5CF83C471DD4D4C80D87C /* XCUIElement+AVFind.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+AVFind.m"; sourceTree = "<group>"; };
 		EE05BAF91D13003C00A3EB00 /* FBKeyboardTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBKeyboardTests.m; sourceTree = "<group>"; };
@@ -797,6 +801,8 @@
 				CAC5C16FD2A508D0C75A5CF8 /* XCUIElement+AVFind.h */,
 				CAC5CA6B6DDCEC8169735C2B /* XCUIElement+AVTyping.h */,
 				CAC5CEE605760AC65756D89C /* XCUIElement+AVTyping.m */,
+				CAC5CF4BD2A5EFE521771628 /* XCUIDevice+AVHelpers.m */,
+				CAC5CF38ACD4BE65561A2D90 /* XCUIDevice+AVHelpers.h */,
 			);
 			name = Categories;
 			path = WebDriverAgentLib/Categories;
@@ -1302,6 +1308,7 @@
 				CAC5C8F54F65E173649BE6C3 /* XCUIElement+AVTyping.h in Headers */,
 				CAC5C4EDFF0026859ED89D22 /* AVKeyboard.h in Headers */,
 				712A0C871DA3E55D007D02E5 /* FBXPath-Private.h in Headers */,
+				CAC5C5388B2E5E31D37BF2D2 /* XCUIDevice+AVHelpers.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1582,6 +1589,7 @@
 				CAC5CFF14B4E0B8A0E3A43C4 /* XCUIElement+AVFind.m in Sources */,
 				CAC5C2CE4AC1BA4463B9B352 /* XCUIElement+AVTyping.m in Sources */,
 				CAC5C178D2ACA1C2732E844B /* AVKeyboard.m in Sources */,
+				CAC5C4D2B43DC77C3E53F727 /* XCUIDevice+AVHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
