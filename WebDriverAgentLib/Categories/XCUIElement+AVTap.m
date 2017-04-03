@@ -12,7 +12,6 @@
 #import "FBRunLoopSpinner.h"
 #import "FBLogger.h"
 #import "XCUIElement+FBUtilities.h"
-#import "XCElementSnapshot-Hitpoint.h"
 #import "XCEventGenerator.h"
 #import "XCSynthesizedEventRecord.h"
 
