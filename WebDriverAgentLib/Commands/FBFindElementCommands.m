@@ -20,6 +20,7 @@
 #import "XCUIElement+FBFind.h"
 #import "XCUIElement+AVFind.h"
 #import "XCUIElement+FBIsVisible.h"
+#import "XCUIElement+FBClassChain.h"
 
 static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteRequest *request)
 {
@@ -41,9 +42,9 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   @[
     [[FBRoute POST:@"/element"] respondWithTarget:self action:@selector(handleFindElement:)],
     [[FBRoute POST:@"/elements"] respondWithTarget:self action:@selector(handleFindElements:)],
-    [[FBRoute GET:@"/uiaElement/:uuid/getVisibleCells"] respondWithTarget:self action:@selector(handleFindVisibleCells:)],
     [[FBRoute POST:@"/element/:uuid/element"] respondWithTarget:self action:@selector(handleFindSubElement:)],
     [[FBRoute POST:@"/element/:uuid/elements"] respondWithTarget:self action:@selector(handleFindSubElements:)],
+    [[FBRoute GET:@"/wda/element/:uuid/getVisibleCells"] respondWithTarget:self action:@selector(handleFindVisibleCells:)],
   ];
 }
 
@@ -95,9 +96,6 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   NSArray *foundElements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:element
                          shouldReturnAfterFirstMatch:NO];
 
-  if (foundElements.count == 0) {
-    return FBNoSuchElementErrorResponseForRequest(request);
-  }
   return FBResponseWithCachedElements(foundElements, request.session.elementCache, NO);
 }
 
@@ -123,6 +121,8 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
     elements = [element fb_descendantsMatchingClassName:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"xui"]) {
       elements = [element av_descendantsMatchingXui:value];
+  } else if ([usingText isEqualToString:@"class chain"]) {
+    elements = [element fb_descendantsMatchingClassChain:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"xpath"]) {
     elements = [element fb_descendantsMatchingXPathQuery:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"predicate string"]) {

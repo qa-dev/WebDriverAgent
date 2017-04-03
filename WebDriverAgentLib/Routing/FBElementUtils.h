@@ -12,23 +12,39 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/*! Notification used to notify about unknown attribute name */
+extern NSString *const FBUnknownAttributeException;
+
 @interface FBElementUtils : NSObject
 
 /**
- Function that returns property name defined by FBElement protocol for given WebDriver Spec property name
+ Returns property name defined by FBElement protocol for the given WebDriver Spec property name.
+ Check the FBElement protocol to get list of supported attributes.
+ This method also supports shortcuts, like wdName == name, wdValue == value.
+ In case the corresponding attribute has a getter defined then the name of the getter witll be returned instead,
+ which makes this method compatible with KVO lookup
  
  @param name WebDriver Spec property name
  @return the corresponding property name
+ @throws FBUnknownAttributeException if there is no matching attribute defined in FBElement protocol
  */
-+ (NSString *)fb_attributeNameForAttributeName:(NSString *)name;
++ (NSString *)wdAttributeNameForAttributeName:(NSString *)name;
 
 /**
- Function used to collect all the unique element types from an array of elements.
+ Collects all the unique element types from an array of elements.
  
  @param elements array of elements
  @return set of unique element types (XCUIElementType items) or an empty set in case the input is empty
  */
-+ (NSSet<NSNumber *> *)fb_getUniqueElementsTypes:(NSArray<id<FBElement>> *)elements;
++ (NSSet<NSNumber *> *)uniqueElementTypesWithElements:(NSArray<id<FBElement>> *)elements;
+
+/**
+ Returns mapping of all possible FBElement protocol properties aliases
+ 
+ @return dictionary of matching property aliases with their real names as values or getter method names if exist
+ for KVO lookup
+ */
++ (NSDictionary<NSString *, NSString *> *)wdAttributeNamesMapping;
 
 @end
 

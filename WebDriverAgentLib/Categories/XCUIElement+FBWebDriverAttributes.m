@@ -27,6 +27,10 @@
   if(!isWebDriverAttributesSelector) {
     return nil;
   }
+  if (!self.exists) {
+    return [XCElementSnapshot new];
+  }
+
   if (self.lastSnapshot) {
     return self.lastSnapshot;
   }
@@ -45,7 +49,7 @@
 
 - (id)fb_valueForWDAttributeName:(NSString *)name
 {
-  return [self valueForKey:[FBElementUtils fb_attributeNameForAttributeName:name]];
+  return [self valueForKey:[FBElementUtils wdAttributeNameForAttributeName:name]];
 }
 
 - (id)wdValue
