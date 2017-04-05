@@ -11,6 +11,7 @@
 
 
 #import "FBApplication.h"
+#import "FBXCTestDaemonsProxy.h"
 #import "FBErrorBuilder.h"
 #import "FBRunLoopSpinner.h"
 #import "FBMacros.h"
@@ -30,7 +31,7 @@ static const NSUInteger AVTypingFrequency = 5;
   __block BOOL didSucceed = NO;
   __block NSError *innerError;
   [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)()){
-    [[XCTestDriver sharedTestDriver].managerProxy _XCT_sendString:text maximumFrequency:AVTypingFrequency completion:^(NSError *typingError){
+    [[FBXCTestDaemonsProxy testRunnerProxy] _XCT_sendString:text maximumFrequency:AVTypingFrequency completion:^(NSError *typingError){
       didSucceed = (typingError == nil);
       innerError = typingError;
       completion();
@@ -41,6 +42,7 @@ static const NSUInteger AVTypingFrequency = 5;
   }
   return didSucceed;
 }
+
 
 + (BOOL)waitUntilVisibleWithError:(NSError **)error
 {
