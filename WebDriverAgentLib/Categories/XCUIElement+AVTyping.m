@@ -25,6 +25,15 @@
   return YES;
 }
 
+- (BOOL)av_typeText:(NSString *)text error:(NSError **)error
+{
+    if (!self.hasKeyboardFocus && ![self av_tapForClearWithError:error]) {
+        return NO;
+    }
+    [self typeText:text];
+    return YES;
+}
+
 
 
 @end

@@ -191,7 +191,7 @@
     if (![element fb_scrollToVisibleWithError:&error]) {
         return FBResponseWithError(error);
     }
-    if (![element av_slowTypeText:textToType error:&error]) {
+    if (![element av_typeText:textToType error:&error]) {
         return FBResponseWithError(error);
     }
     return FBResponseWithElementUUID(elementUUID);

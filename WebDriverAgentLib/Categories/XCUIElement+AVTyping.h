@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)av_slowTypeText:(NSString *)text error:(NSError **)error;
 
+- (BOOL)av_typeText:(NSString *)text error:(NSError **)error;
+
 @end
 
 NS_ASSUME_NONNULL_END
