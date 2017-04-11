@@ -84,6 +84,11 @@ static FBSession *_activeSession;
 - (FBApplication *)refreshTestingApplication
 {
   self.testedApplication.processID = 0;
+
+  FBApplication *application = [FBApplication fb_activeApplication];
+  if (application.running) {
+    self.testedApplication = application;
+  }
   return self.testedApplication;
 }
 

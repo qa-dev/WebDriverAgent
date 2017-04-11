@@ -1387,7 +1387,6 @@
 				EE35AD431E3B77D600A02D78 /* XCTestCaseSuite.h in Headers */,
 				EE35AD091E3B77D600A02D78 /* _XCInternalTestRun.h in Headers */,
 				EEE376411D59F81400ED88DD /* XCElementSnapshot+FBHelpers.h in Headers */,
-				EE158B0D1CBD459C00A3E3F0,
 				CAC5C990877767BAF9038A53 /* XCUIElement+AVTap.h in Headers */,
 				CAC5C0766C2D30A4F1F71888 /* XCUIElement+AVFind.h in Headers */,
 				CAC5C8F54F65E173649BE6C3 /* XCUIElement+AVTyping.h in Headers */,
@@ -1395,14 +1394,6 @@
 				712A0C871DA3E55D007D02E5 /* FBXPath-Private.h in Headers */,
 				EE35AD321E3B77D600A02D78 /* XCKeyMappingPath.h in Headers */,
 				CAC5C5388B2E5E31D37BF2D2 /* XCUIDevice+AVHelpers.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		EE3A186A1CDE884800DE4205 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				EE3A18771CDE886F00DE4205 /* FBHTTPOverUSBClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1513,19 +1504,24 @@
 				TargetAttributes = {
 					EE158A981CBD452B00A3E3F0 = {
 						CreatedOnToolsVersion = 7.3;
+						DevelopmentTeam = 5PHGGKL9UQ;
 					};
 					EE836C011C0F118600D87246 = {
 						CreatedOnToolsVersion = 7.1.1;
+						DevelopmentTeam = 5PHGGKL9UQ;
 					};
 					EE9B75D31CF7956C00275851 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = 5PHGGKL9UQ;
 					};
 					EE9B75EB1CF7956C00275851 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = 5PHGGKL9UQ;
 						TestTargetID = EE9B75D31CF7956C00275851;
 					};
 					EEF988291C486603005CA669 = {
 						CreatedOnToolsVersion = 7.2;
+						DevelopmentTeam = 5PHGGKL9UQ;
 					};
 				};
 			};
@@ -1792,9 +1788,11 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 5PHGGKL9UQ;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1846,9 +1844,11 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 5PHGGKL9UQ;
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1877,7 +1877,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = NO;
@@ -1905,7 +1905,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
