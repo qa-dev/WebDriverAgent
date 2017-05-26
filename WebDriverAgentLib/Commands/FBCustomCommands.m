@@ -38,12 +38,14 @@
   @[
     [[FBRoute POST:@"/timeouts"] respondWithTarget:self action:@selector(handleTimeouts:)],
     [[FBRoute POST:@"/timeouts/implicit_wait"] respondWithTarget:self action:@selector(handleTimeouts:)],
+    [[FBRoute POST:@"/wda/homescreen"] respondWithTarget:self action:@selector(handleHomescreenCommand:)],
     [[FBRoute POST:@"/wda/homescreen"].withoutSession respondWithTarget:self action:@selector(handleHomescreenCommand:)],
+    [[FBRoute POST:@"/wda/homescreenDoubleTap"] respondWithTarget:self action:@selector(handleDoubleTapHomescreenCommand:)],
     [[FBRoute POST:@"/wda/homescreenDoubleTap"].withoutSession respondWithTarget:self action:@selector(handleDoubleTapHomescreenCommand:)],
     [[FBRoute POST:@"/openApp"].withoutSession respondWithTarget:self action:@selector(handleOpenAppCommand:)],
     [[FBRoute POST:@"/wda/deactivateApp"] respondWithTarget:self action:@selector(handleDeactivateAppCommand:)],
     [[FBRoute POST:@"/wda/keyboard/dismiss"] respondWithTarget:self action:@selector(handleDismissKeyboardCommand:)],
-    [[FBRoute POST:@"/setToPasteboard"] respondWithTarget:self action:@selector(handleSetToPasteboard:)], [[FBRoute POST:@"/connectRunApp"] respondWithTarget:self action:@selector(handleRefreshSessionCommand:)],
+    [[FBRoute POST:@"/setToPasteboard"] respondWithTarget:self action:@selector(handleSetToPasteboard:)],
     [[FBRoute POST:@"/connectRunApp"] respondWithTarget:self action:@selector(handleRefreshSessionCommand:)],
   ];
 }

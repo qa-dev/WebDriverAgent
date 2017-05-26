@@ -75,7 +75,6 @@
   } else {
     NSString *typeName = [@"XCUIElementType" stringByAppendingString:type];
     elementType = [FBElementTypeTransformer elementTypeWithTypeName:typeName];
-//    elementType = [type intValue];
   }
 
   // Если в начале стоит точка, то мы берем ребенка, если нет, то потомка.
