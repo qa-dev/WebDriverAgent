@@ -36,6 +36,11 @@ extern NSString *const FBApplicationCrashedException;
 - (FBApplication *)refreshTestingApplication;
 
 /**
+ Kills application associated with all sessions and removes all sessions.
+ */
++ (void)killAll;
+
+/**
  Fetches session for given identifier.
  If identifier doesn't match activeSession identifier, will return nil.
 

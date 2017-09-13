@@ -11,6 +11,7 @@
 
 #import "FBApplication.h"
 #import "FBKeyboard.h"
+#import "FBPredicate.h"
 #import "FBRoute.h"
 #import "FBRouteRequest.h"
 #import "FBRunLoopSpinner.h"
@@ -20,10 +21,12 @@
 #import "FBApplication.h"
 #import "FBMacros.h"
 #import "FBMathUtils.h"
+#import "NSPredicate+FBFormat.h"
 #import "XCUICoordinate.h"
 #import "XCUIDevice.h"
 #import "XCUIElement+AVTyping.h"
 #import "XCUIElement+FBIsVisible.h"
+#import "XCUIElement+FBPickerWheel.h"
 #import "XCUIElement+FBScrolling.h"
 #import "XCUIElement+FBTap.h"
 #import "XCUIElement+FBTyping.h"
@@ -69,6 +72,7 @@
     [[FBRoute POST:@"/wda/touchAndHold"] respondWithTarget:self action:@selector(handleTouchAndHoldCoordinate:)],
     [[FBRoute POST:@"/wda/doubleTap"] respondWithTarget:self action:@selector(handleDoubleTapCoordinate:)],
     [[FBRoute POST:@"/wda/keys"] respondWithTarget:self action:@selector(handleKeys:)],
+    [[FBRoute POST:@"/wda/pickerwheel/:uuid/select"] respondWithTarget:self action:@selector(handleWheelSelect:)]
   ];
 }
 
@@ -270,29 +274,36 @@
   // what ios-driver did and sadly, we must copy them.
   NSString *const name = request.arguments[@"name"];
   if (name) {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@", FBStringify(XCUIElement, wdName), name];
-    XCUIElement *childElement = [[[[element descendantsMatchingType:XCUIElementTypeAny] matchingPredicate:predicate] allElementsBoundByIndex] lastObject];
+    XCUIElement *childElement = [[[[element descendantsMatchingType:XCUIElementTypeAny] matchingIdentifier:name] allElementsBoundByIndex] lastObject];
+    if (!childElement) {
+      return FBResponseWithErrorFormat(@"'%@' identifier didn't match any elements", name);
+    }
     return [self.class handleScrollElementToVisible:childElement withRequest:request];
   }
 
   NSString *const direction = request.arguments[@"direction"];
   if (direction) {
+    NSString *const distanceString = request.arguments[@"distance"] ?: @"1.0";
+    CGFloat distance = (CGFloat)distanceString.doubleValue;
     if ([direction isEqualToString:@"up"]) {
-      [element fb_scrollUp];
+      [element fb_scrollUpByNormalizedDistance:distance];
     } else if ([direction isEqualToString:@"down"]) {
-      [element fb_scrollDown];
+      [element fb_scrollDownByNormalizedDistance:distance];
     } else if ([direction isEqualToString:@"left"]) {
-      [element fb_scrollLeft];
+      [element fb_scrollLeftByNormalizedDistance:distance];
     } else if ([direction isEqualToString:@"right"]) {
-      [element fb_scrollRight];
+      [element fb_scrollRightByNormalizedDistance:distance];
     }
     return FBResponseWithOK();
   }
 
   NSString *const predicateString = request.arguments[@"predicateString"];
   if (predicateString) {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateString];
-    XCUIElement *childElement = [[[[element descendantsMatchingType:XCUIElementTypeAny] matchingPredicate:predicate] allElementsBoundByIndex] lastObject];
+    NSPredicate *formattedPredicate = [NSPredicate fb_formatSearchPredicate:[FBPredicate predicateWithFormat:predicateString]];
+    XCUIElement *childElement = [[[[element descendantsMatchingType:XCUIElementTypeAny] matchingPredicate:formattedPredicate] allElementsBoundByIndex] lastObject];
+    if (!childElement) {
+      return FBResponseWithErrorFormat(@"'%@' predicate didn't match any elements", predicateString);
+    }
     return [self.class handleScrollElementToVisible:childElement withRequest:request];
   }
 
@@ -398,6 +409,37 @@
   });
 }
 
+static const CGFloat DEFAULT_OFFSET = (CGFloat)0.2;
+
++ (id<FBResponsePayload>)handleWheelSelect:(FBRouteRequest *)request
+{
+  FBElementCache *elementCache = request.session.elementCache;
+  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+  if (element.elementType != XCUIElementTypePickerWheel) {
+    return FBResponseWithErrorFormat(@"The element is expected to be a valid Picker Wheel control. '%@' was given instead", element.wdType);
+  }
+  NSString* order = [request.arguments[@"order"] lowercaseString];
+  CGFloat offset = DEFAULT_OFFSET;
+  if (request.arguments[@"offset"]) {
+    offset = (CGFloat)[request.arguments[@"offset"] doubleValue];
+    if (offset <= 0.0 || offset > 0.5) {
+      return FBResponseWithErrorFormat(@"'offset' value is expected to be in range (0.0, 0.5]. '%@' was given instead", request.arguments[@"offset"]);
+    }
+  }
+  BOOL isSuccessful = false;
+  NSError *error;
+  if ([order isEqualToString:@"next"]) {
+    isSuccessful = [element fb_selectNextOptionWithOffset:offset error:&error];
+  } else if ([order isEqualToString:@"previous"]) {
+    isSuccessful = [element fb_selectPreviousOptionWithOffset:offset error:&error];
+  } else {
+    return FBResponseWithErrorFormat(@"Only 'previous' and 'next' order values are supported. '%@' was given instead", request.arguments[@"order"]);
+  }
+  if (!isSuccessful) {
+    return FBResponseWithError(error);
+  }
+  return FBResponseWithOK();
+}
 
 #pragma mark - Helpers
 

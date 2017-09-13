@@ -42,13 +42,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (XCElementSnapshot *)fb_lastSnapshot;
 
 /**
- Categorizes all descendants of the current (self) element based on unique types provided in byTypes set
+ Filters elements by matching them to snapshots from the corresponding array
  
- @param byTypes set of XCUIElementType items
- @return The dictionary, caontaining arrays descendant elements as values categorized by their types as keys.
- An empty dictionary will be returned in case if byTypes set has no items
+ @param snapshots Array of snapshots to be matched with
+
+ @return Array of filtered elements, which have matches in snapshots array
  */
-- (NSDictionary<NSNumber *, NSArray<XCUIElement *> *> *)fb_categorizeDescendants:(NSSet<NSNumber *> *)byTypes;
+- (NSArray<XCUIElement *> *)fb_filterDescendantsWithSnapshots:(NSArray<XCElementSnapshot *> *)snapshots;
+
+/**
+ Waits until element snapshot is stable to avoid "Error copying attributes -25202 error".
+ This error usually happens for testmanagerd if there is an active UI animation in progress and
+ causes 15-seconds delay while getting hitpoint value of element's snapshot.
+
+ @return YES if wait succeeded ortherwise NO if there is still some active animation in progress
+*/
+- (BOOL)fb_waitUntilSnapshotIsStable;
 
 @end
 

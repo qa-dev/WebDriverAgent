@@ -53,9 +53,12 @@
       [NSString stringWithFormat:@"%@ is not a valid URL", url]
     );
   }
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   if (![[UIApplication sharedApplication] openURL:url]) {
     return FBResponseWithErrorFormat(@"Failed to open %@", url);
   }
+  #pragma clang diagnostic pop
   return FBResponseWithOK();
 }
 
@@ -68,6 +71,9 @@
     return FBResponseWithErrorFormat(@"'bundleId' desired capability not provided");
   }
   [FBConfiguration setShouldUseTestManagerForVisibilityDetection:[requirements[@"shouldUseTestManagerForVisibilityDetection"] boolValue]];
+  if (requirements[@"shouldUseCompactResponses"]) {
+    [FBConfiguration setShouldUseCompactResponses:[requirements[@"shouldUseCompactResponses"] boolValue]];
+  }
   if (requirements[@"maxTypingFrequency"]) {
     [FBConfiguration setMaxTypingFrequency:[requirements[@"maxTypingFrequency"] integerValue]];
   }

@@ -16,6 +16,7 @@
 #import "XCElementSnapshot+FBHelpers.h"
 #import "XCUIDevice+FBHelpers.h"
 #import "XCUIElement+FBIsVisible.h"
+#import "XCUIElement+FBUtilities.h"
 #import "XCUIElement+FBWebDriverAttributes.h"
 
 const static NSTimeInterval FBMinimumAppSwitchWait = 3.0;
@@ -35,23 +36,17 @@ const static NSTimeInterval FBMinimumAppSwitchWait = 3.0;
   return YES;
 }
 
-- (XCElementSnapshot *)fb_mainWindowSnapshot
-{
-  NSArray<XCElementSnapshot *> *mainWindows = [self.lastSnapshot descendantsByFilteringWithBlock:^BOOL(XCElementSnapshot *snapshot) {
-    return snapshot.isMainWindow;
-  }];
-  return mainWindows.lastObject;
-}
-
 - (NSDictionary *)fb_tree
 {
-  return [self.class dictionaryForElement:self.lastSnapshot];
+  [self fb_waitUntilSnapshotIsStable];
+  return [self.class dictionaryForElement:self.fb_lastSnapshot];
 }
 
 - (NSDictionary *)fb_accessibilityTree
 {
+  [self fb_waitUntilSnapshotIsStable];
   // We ignore all elements except for the main window for accessibility tree
-  return [self.class accessibilityInfoForElement:self.fb_mainWindowSnapshot];
+  return [self.class accessibilityInfoForElement:self.fb_lastSnapshot];
 }
 
 + (NSDictionary *)dictionaryForElement:(XCElementSnapshot *)snapshot

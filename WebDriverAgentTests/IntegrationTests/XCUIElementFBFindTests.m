@@ -11,6 +11,7 @@
 
 #import "FBIntegrationTestCase.h"
 #import "FBElementUtils.h"
+#import "FBTestMacros.h"
 #import "XCUIElement.h"
 #import "XCUIElement+FBFind.h"
 #import "XCElementSnapshot+FBHelpers.h"
@@ -27,6 +28,10 @@
 - (void)setUp
 {
   [super setUp];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+  });
   self.testedView = self.testedApplication.otherElements[@"MainView"];
   XCTAssertTrue(self.testedView.exists);
   [self.testedView resolve];
@@ -87,6 +92,13 @@
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
 }
 
+- (void)testSelfWithXPathQuery
+{
+  NSArray<XCUIElement *> *matchingSnapshots = [self.testedApplication fb_descendantsMatchingXPathQuery:@"//XCUIElementTypeApplication" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 1);
+  XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeApplication);
+}
+
 - (void)testSingleDescendantWithXPathQuery
 {
   NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingXPathQuery:@"//XCUIElementTypeButton" shouldReturnAfterFirstMatch:YES];
@@ -118,8 +130,8 @@
 
 - (void)testDescendantsWithComplexXPathQuery
 {
-    NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingXPathQuery:@"//*[@label='Scrolling']/preceding::*[boolean(string(@label))]" shouldReturnAfterFirstMatch:NO];
-    XCTAssertEqual(matchingSnapshots.count, 3);
+  NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingXPathQuery:@"//*[@label='Scrolling']/preceding::*[boolean(string(@label))]" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 3);
 }
 
 - (void)testDescendantsWithWrongXPathQuery
@@ -134,7 +146,7 @@
                                NSException, XCElementSnapshotInvalidXPathException);
 }
 
-- (void)disabled_testVisibleDescendantWithXPathQuery
+- (void)testVisibleDescendantWithXPathQuery
 {
   NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingXPathQuery:@"//XCUIElementTypeButton[@name='Alerts' and @enabled='true' and @visible='true']" shouldReturnAfterFirstMatch:NO];
   XCTAssertEqual(matchingSnapshots.count, 1);
@@ -144,15 +156,6 @@
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
 }
 
-- (void)disabled_testInvisibleDescendantWithXPathQuery
-{
-  [self goToAttributesPage];
-  NSArray<XCUIElement *> *matchingSnapshots = [self.testedApplication fb_descendantsMatchingXPathQuery:@"//XCUIElementTypePageIndicator[@visible='true']" shouldReturnAfterFirstMatch:NO];
-  XCTAssertEqual(matchingSnapshots.count, 1);
-  XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypePageIndicator);
-  XCTAssertTrue(matchingSnapshots.lastObject.fb_isVisible);
-}
-
 - (void)testDescendantsWithPredicateString
 {
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"label = 'Alerts'"];
@@ -160,6 +163,14 @@
   XCTAssertEqual(matchingSnapshots.count, 1);
   XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeButton);
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
+}
+
+- (void)testSelfWithPredicateString
+{
+  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == 'XCUIElementTypeApplication'"];
+  NSArray<XCUIElement *> *matchingSnapshots = [self.testedApplication fb_descendantsMatchingPredicate:predicate shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 1);
+  XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeApplication);
 }
 
 - (void)testSingleDescendantWithPredicateString
@@ -175,6 +186,16 @@
   NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingProperty:@"label" value:@"Alert" partialSearch:NO];
   XCTAssertEqual(matchingSnapshots.count, 0);
   matchingSnapshots = [self.testedView fb_descendantsMatchingProperty:@"label" value:@"Alerts" partialSearch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 1);
+  XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeButton);
+  XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
+}
+
+- (void)testGlobalWithPropertyStrict
+{
+  NSArray<XCUIElement *> *matchingSnapshots = [self.testedApplication fb_descendantsMatchingProperty:@"label" value:@"Alert" partialSearch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 0);
+  matchingSnapshots = [self.testedApplication fb_descendantsMatchingProperty:@"label" value:@"Alerts" partialSearch:NO];
   XCTAssertEqual(matchingSnapshots.count, 1);
   XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypeButton);
   XCTAssertEqualObjects(matchingSnapshots.lastObject.label, @"Alerts");
@@ -205,6 +226,29 @@
   XCTAssertEqual(matchingSnapshots.count, 2);
   XCTAssertEqualObjects([matchingSnapshots firstObject].label, @"Alerts");
   XCTAssertEqualObjects([matchingSnapshots lastObject].label, @"Attributes");
+}
+
+- (void)testDescendantsWithIndirectClassChainAndPredicates
+{
+  NSArray<XCUIElement *> *simpleQueryMatches = [self.testedApplication fb_descendantsMatchingClassChain:@"XCUIElementTypeWindow/*/*[2]/*/*/XCUIElementTypeButton[`label BEGINSWITH 'A'`]" shouldReturnAfterFirstMatch:NO];
+  NSArray<XCUIElement *> *deepQueryMatches = [self.testedApplication fb_descendantsMatchingClassChain:@"XCUIElementTypeWindow/**/XCUIElementTypeButton[`label BEGINSWITH 'A'`]" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(simpleQueryMatches.count, deepQueryMatches.count);
+  XCTAssertEqualObjects([simpleQueryMatches firstObject].label, [deepQueryMatches firstObject].label);
+  XCTAssertEqualObjects([simpleQueryMatches lastObject].label, [deepQueryMatches lastObject].label);
+}
+
+- (void)testSingleDescendantWithComplexIndirectClassChain
+{
+  NSArray<XCUIElement *> *queryMatches = [self.testedApplication fb_descendantsMatchingClassChain:@"**/*/XCUIElementTypeButton[2]" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(queryMatches.count, 1);
+  XCTAssertEqual(queryMatches.lastObject.elementType, XCUIElementTypeButton);
+  XCTAssertEqualObjects(queryMatches.lastObject.label, @"Deadlock app");
+}
+
+- (void)testSingleDescendantWithComplexIndirectClassChainAndZeroMatches
+{
+  NSArray<XCUIElement *> *queryMatches = [self.testedApplication fb_descendantsMatchingClassChain:@"**/*/XCUIElementTypeWindow" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(queryMatches.count, 0);
 }
 
 - (void)testDescendantsWithClassChainAndPredicatesAndIndexes
@@ -246,6 +290,41 @@
 {
   XCTAssertThrowsSpecificNamed([self.testedApplication fb_descendantsMatchingClassChain:@"XCUIElementTypeWindow[`bla != 'bla'`]" shouldReturnAfterFirstMatch:NO],
                                NSException, FBUnknownAttributeException);;
+}
+
+@end
+
+@interface XCUIElementFBFindTests_AttributesPage : FBIntegrationTestCase
+@end
+
+
+@implementation XCUIElementFBFindTests_AttributesPage
+
+- (void)setUp
+{
+  [super setUp];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+    [self goToAttributesPage];
+  });
+}
+
+- (void)testInvisibleDescendantWithXPathQuery
+{
+  NSArray<XCUIElement *> *matchingSnapshots = [self.testedApplication fb_descendantsMatchingXPathQuery:@"//XCUIElementTypePageIndicator[@visible='false']" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(matchingSnapshots.count, 1);
+  XCTAssertEqual(matchingSnapshots.lastObject.elementType, XCUIElementTypePageIndicator);
+  XCTAssertFalse(matchingSnapshots.lastObject.fb_isVisible);
+}
+
+- (void)testNestedQueryWithClassChain
+{
+  FBAssertWaitTillBecomesTrue(self.testedApplication.buttons[@"Button"].fb_isVisible);
+  XCUIElement *datePicker = [[self.testedApplication descendantsMatchingType:XCUIElementTypeDatePicker].allElementsBoundByIndex firstObject];
+  NSArray<XCUIElement *> *matches = [datePicker fb_descendantsMatchingClassChain:@"XCUIElementTypeOther" shouldReturnAfterFirstMatch:NO];
+  XCTAssertEqual(matches.count, 1);
+  XCTAssertEqual([matches firstObject].elementType, XCUIElementTypeOther);
 }
 
 @end

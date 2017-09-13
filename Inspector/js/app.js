@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 import HTTP from 'js/http';
 import Screen from 'js/screen';
@@ -29,14 +30,20 @@ class App extends React.Component {
     this.state = {};
   }
 
-  componentDidMount() {
+  refreshApp() {
     this.fetchScreenshot();
     this.fetchTree();
   }
 
+  componentDidMount() {
+    this.refreshApp();
+  }
+
   fetchScreenshot() {
     HTTP.get(ORIENTATION_ENDPOINT, (orientation) => {
+      orientation = orientation.value;
       HTTP.get(SCREENSHOT_ENDPOINT, (base64EncodedImage) => {
+        base64EncodedImage = base64EncodedImage.value;
         ScreenshotFactory.createScreenshot(orientation, base64EncodedImage, (screenshot) => {
           this.setState({
             screenshot: screenshot,
@@ -48,6 +55,7 @@ class App extends React.Component {
 
   fetchTree() {
     HTTP.get(TREE_ENDPOINT, (treeInfo) => {
+      treeInfo = treeInfo.value;
       this.setState({
         rootNode: TreeNode.buildNode(treeInfo, new TreeContext()),
       });
@@ -60,7 +68,8 @@ class App extends React.Component {
         <Screen
           highlightedNode={this.state.highlightedNode}
           screenshot={this.state.screenshot}
-          rootNode={this.state.rootNode} />
+          rootNode={this.state.rootNode}
+          refreshApp={() => { this.refreshApp(); }} />
         <Tree
           onHighlightedNodeChange={(node) => {
             this.setState({
@@ -74,10 +83,12 @@ class App extends React.Component {
           }}
           rootNode={this.state.rootNode}
           selectedNode={this.state.selectedNode} />
-        <Inspector selectedNode={this.state.selectedNode} />
+        <Inspector
+          selectedNode={this.state.selectedNode}
+          refreshApp={() => { this.refreshApp(); }} />
       </div>
     );
   }
 }
 
-React.render(<App />, document.body);
+ReactDOM.render(<App />, document.body);

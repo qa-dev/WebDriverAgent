@@ -1,0 +1,365 @@
+diff --git a/Configurations/ProjectSettings.xcconfig b/Configurations/ProjectSettings.xcconfig
+index 3861d9c..e241971 100644
+--- a/Configurations/ProjectSettings.xcconfig
++++ b/Configurations/ProjectSettings.xcconfig
+@@ -24,4 +24,4 @@ CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES
+ 
+ GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DDXML_LIBXML_MODULE_ENABLED=0
+ 
+-WARNING_CFLAGS = $(inherited) -Weverything -Wno-objc-missing-property-synthesis -Wno-unused-macros -Wno-disabled-macro-expansion -Wno-gnu-statement-expression -Wno-language-extension-token -Wno-overriding-method-mismatch -Wno-missing-variable-declarations -Rno-module-build -Wno-auto-import -Wno-objc-interface-ivars -Wno-documentation-unknown-command -Wno-reserved-id-macro -Wno-unused-parameter -Wno-gnu-conditional-omitted-operand -Wno-explicit-ownership-type -Wno-date-time -Wno-cast-align -Wno-cstring-format-directive -Wno-double-promotion
+\ No newline at end of file
++WARNING_CFLAGS = $(inherited) -Weverything -Wno-objc-missing-property-synthesis -Wno-unused-macros -Wno-disabled-macro-expansion -Wno-gnu-statement-expression -Wno-language-extension-token -Wno-overriding-method-mismatch -Wno-missing-variable-declarations -Rno-module-build -Wno-auto-import -Wno-objc-interface-ivars -Wno-documentation-unknown-command -Wno-reserved-id-macro -Wno-unused-parameter -Wno-gnu-conditional-omitted-operand -Wno-explicit-ownership-type -Wno-date-time -Wno-cast-align -Wno-cstring-format-directive -Wno-double-promotion
+diff --git a/WebDriverAgent.xcodeproj/project.pbxproj b/WebDriverAgent.xcodeproj/project.pbxproj
+index 845f32c..790809e 100644
+--- a/WebDriverAgent.xcodeproj/project.pbxproj
++++ b/WebDriverAgent.xcodeproj/project.pbxproj
+@@ -1946,7 +1946,7 @@
+ 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+ 				);
+ 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
+-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
++				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+ 				OTHER_LDFLAGS = (
+ 					"$(inherited)",
+@@ -1954,6 +1954,7 @@
+ 				);
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentRunner;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
++				SDKROOT = iphoneos9.3;
+ 				USES_XCTRUNNER = YES;
+ 			};
+ 			name = Debug;
+@@ -1967,7 +1968,7 @@
+ 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+ 				);
+ 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
+-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
++				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+ 				OTHER_LDFLAGS = (
+ 					"$(inherited)",
+@@ -1975,6 +1976,7 @@
+ 				);
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentRunner;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
++				SDKROOT = iphoneos9.3;
+ 				USES_XCTRUNNER = YES;
+ 			};
+ 			name = Release;
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+FBFind.h b/WebDriverAgentLib/Categories/XCUIElement+FBFind.h
+index eb399d0..7a50832 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+FBFind.h
++++ b/WebDriverAgentLib/Categories/XCUIElement+FBFind.h
+@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
+  */
+ - (NSArray<XCUIElement *> *)fb_descendantsMatchingClassName:(NSString *)className;
+ 
++- (NSArray<XCUIElement *> *)fb_descendantsMatchingCellByIndex:(NSString *)cellIndex;
++
+ /**
+  Returns an array of descendants matching given accessibility id
+ 
+@@ -36,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
+  @param xpathQuery requested xpath query
+  @return an array of descendants matching given xpath query
+  */
+-- (NSArray<XCUIElement *> *)fb_descendantsMatchingXPathQuery:(NSString *)xpathQuery;
++- (NSArray<XCUIElement *> *)fb_descendantsMatchingXPathQuery:(NSString *)xpathQuery first:(BOOL)first;
+ 
+ /**
+  Returns an array of descendants matching given predicate
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+FBFind.m b/WebDriverAgentLib/Categories/XCUIElement+FBFind.m
+index 068478a..e38cc90 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+FBFind.m
++++ b/WebDriverAgentLib/Categories/XCUIElement+FBFind.m
+@@ -31,6 +31,14 @@ @implementation XCUIElement (FBFind)
+   return result.copy;
+ }
+ 
++- (NSArray<XCUIElement *> *)fb_descendantsMatchingCellByIndex:(NSString *)cellIndex
++{
++    NSMutableArray *result = [NSMutableArray array];
++    NSUInteger indx = cellIndex.integerValue;
++    XCUIElement *elem = [[self descendantsMatchingType:XCUIElementTypeCell] elementBoundByIndex:indx];
++    [result addObject:elem];
++    return result.copy;
++}
+ 
+ #pragma mark - Search by property value
+ 
+@@ -78,26 +86,52 @@ - (void)descendantsWithProperty:(NSString *)property value:(NSString *)value par
+ 
+ #pragma mark - Search by xpath
+ 
+-- (NSArray<XCUIElement *> *)fb_descendantsMatchingXPathQuery:(NSString *)xpathQuery
++- (NSArray<XCUIElement *> *)fb_descendantsMatchingXPathQuery:(NSString *)xpathQuery first:(BOOL)first
+ {
+-  // XPath will try to match elements only class name, so requesting elements by XCUIElementTypeAny will not work. We should use '*' instead.
++    NSDictionary *elementDict = @{
++                                  @"XCUIElementTypeAny" : [NSNumber numberWithInt:XCUIElementTypeAny],
++                                  @"XCUIElementTypeCell" : [NSNumber numberWithInt:XCUIElementTypeCell],
++                                  @"XCUIElementTypeCell[2]" : [NSNumber numberWithInt:XCUIElementTypeCell],
++                                  @"XCUIElementTypeStaticText" : [NSNumber numberWithInt:XCUIElementTypeStaticText],
++//      @"XCUIElementTypeOther" : XCUIElementTypeOther,
++//      @"XCUIElementTypeApplication" : XCUIElementTypeApplication,
++//      @"XCUIElementTypeGroup" : XCUIElementTypeGroup,
++//      @"XCUIElementTypeWindow" : XCUIElementTypeWindow
++   };
++      // XPath will try to match elements only class name, so requesting elements by XCUIElementTypeAny will not work. We should use '*' instead.
+   xpathQuery = [xpathQuery stringByReplacingOccurrencesOfString:@"XCUIElementTypeAny" withString:@"*"];
++  NSString *class = [[xpathQuery componentsSeparatedByString:@"/"] lastObject];
+   NSArray *matchingSnapshots = [self.lastSnapshot fb_descendantsMatchingXPathQuery:xpathQuery];
+-  NSArray *allElements = [[self descendantsMatchingType:XCUIElementTypeAny] allElementsBoundByIndex];
+-  NSArray *matchingElements = [self filterElements:allElements matchingSnapshots:matchingSnapshots];
++    NSArray *allElements;
++    if ([elementDict objectForKey:class]) {
++        XCUIElementType t = [[elementDict objectForKey:class] intValue];
++//        NSPredicate pred = [NSPredicate predicateWithFormat: @"wdType=%@", t]
++         allElements = [[self descendantsMatchingType:t] allElementsBoundByIndex];
++    } else {
++        allElements = [[self descendantsMatchingType:XCUIElementTypeAny] allElementsBoundByIndex];
++    }
++  
++    NSArray *matchingElements = [self filterElements:allElements matchingSnapshots:matchingSnapshots first:first];
+   return matchingElements;
+ }
+ 
+-- (NSArray<XCUIElement *> *)filterElements:(NSArray<XCUIElement *> *)elements matchingSnapshots:(NSArray<XCElementSnapshot *> *)snapshots
++- (NSArray<XCUIElement *> *)filterElements:(NSArray<XCUIElement *> *)elements matchingSnapshots:(NSArray<XCElementSnapshot *> *)snapshots first:(BOOL)first
+ {
+   NSMutableArray *matchingElements = [NSMutableArray array];
+   [snapshots enumerateObjectsUsingBlock:^(XCElementSnapshot *snapshot, NSUInteger snapshotIdx, BOOL *stopSnapshotEnum) {
+     [elements enumerateObjectsUsingBlock:^(XCUIElement *element, NSUInteger elementIdx, BOOL *stopElementEnum) {
+-      [element resolve];
+-      if ([element.lastSnapshot _matchesElement:snapshot]) {
+-        [matchingElements addObject:element];
+-        *stopElementEnum = YES;
+-      }
++        if (element.elementType == snapshot.elementType) {
++            [element resolve];
++            
++            if ([element.lastSnapshot _matchesElement:snapshot]) {
++                [matchingElements addObject:element];
++                *stopElementEnum = YES;
++                if (first) {
++                    *stopSnapshotEnum = YES;
++                }
++            }
++        }
++      
+     }];
+   }];
+   return matchingElements.copy;
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.h b/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.h
+index f307499..0748b65 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.h
++++ b/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.h
+@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
+  */
+ - (BOOL)fb_scrollToVisibleWithError:(NSError **)error;
+ 
++- (BOOL)fb_scrollToElementWithError:(NSError **)error;
+ /**
+  Scrolls parent scroll view till receiver is visible. Whenever element is invisible it scrolls by normalizedScrollDistance
+  in it's direction. Eg. if normalizedScrollDistance is equal to 0.5, each step will scroll by half of scroll view's size.
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.m b/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.m
+index feea2ce..c50b5f8 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.m
++++ b/WebDriverAgentLib/Categories/XCUIElement+FBScrolling.m
+@@ -74,8 +74,87 @@ - (BOOL)fb_scrollToVisibleWithError:(NSError **)error
+   return [self fb_scrollToVisibleWithNormalizedScrollDistance:FBScrollToVisibleNormalizedDistance error:error];
+ }
+ 
++- (BOOL)fb_scrollToElementWithError:(NSError **)error
++{
++    return [self fb_scrollToElementWithNormalizedScrollDistance:FBScrollToVisibleNormalizedDistance error:error];
++}
++
+ - (BOOL)fb_scrollToVisibleWithNormalizedScrollDistance:(CGFloat)normalizedScrollDistance error:(NSError **)error
+ {
++    [self resolve];
++    if (self.fb_isVisible) {
++        return YES;
++    }
++    NSArray *possibleParents = @[
++                                 @(XCUIElementTypeScrollView),
++                                 @(XCUIElementTypeCollectionView),
++                                 @(XCUIElementTypeTable),
++                                 ];
++    
++    XCElementSnapshot *scrollView = [self.lastSnapshot fb_parentMatchingOneOfTypes:possibleParents];
++    
++    XCElementSnapshot *targetCellSnapshot = self.fb_parentCellSnapshot;
++    NSArray<XCElementSnapshot *> *cellSnapshots = [scrollView fb_descendantsMatchingType:XCUIElementTypeCell];
++    if (cellSnapshots.count == 0) {
++        // In some cases XCTest will not report Cell Views. In that case grabbing descendants and trying to figure out scroll directon from them.
++        cellSnapshots = scrollView._allDescendants;
++    }
++    NSArray<XCElementSnapshot *> *visibleCellSnapshots = [cellSnapshots filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == YES", FBStringify(XCUIElement, fb_isVisible)]];
++    
++    if (visibleCellSnapshots.count < 2) {
++        return
++        [[[FBErrorBuilder builder]
++          withDescriptionFormat:@"Failed to perform scroll with visible cell count %lu", (unsigned long)visibleCellSnapshots.count]
++         buildError:error];
++    }
++    XCElementSnapshot *lastSnapshot = visibleCellSnapshots.lastObject;
++    NSUInteger targetCellIndex = [cellSnapshots indexOfObject:targetCellSnapshot];
++    NSUInteger visibleCellIndex = [cellSnapshots indexOfObject:lastSnapshot];
++    
++    XCElementSnapshot *firsVisibleCell = visibleCellSnapshots.firstObject;
++    XCElementSnapshot *lastVisibleCell = visibleCellSnapshots.lastObject;
++    CGVector cellGrowthVector = CGVectorMake(firsVisibleCell.frame.origin.x - lastVisibleCell.frame.origin.x,
++                                             firsVisibleCell.frame.origin.y - lastVisibleCell.frame.origin.y
++                                             );
++    
++    const BOOL isVerticalScroll = (ABS(cellGrowthVector.dy) > ABS(cellGrowthVector.dx));
++    
++    const NSUInteger maxScrollCount = 25;
++    NSUInteger scrollCount = 0;
++    
++    XCElementSnapshot *prescrollSnapshot = self.lastSnapshot;
++    // Scrolling till cell is visible and got corrent value of frames
++    while (![self fb_isEquivalentElementSnapshotVisible:prescrollSnapshot] && scrollCount < maxScrollCount) {
++        if (targetCellIndex < visibleCellIndex) {
++            isVerticalScroll ? [scrollView fb_scrollUpByNormalizedDistance:normalizedScrollDistance] : [scrollView fb_scrollLeftByNormalizedDistance:normalizedScrollDistance];
++        }
++        else {
++            isVerticalScroll ? [scrollView fb_scrollDownByNormalizedDistance:normalizedScrollDistance] : [scrollView fb_scrollRightByNormalizedDistance:normalizedScrollDistance];
++        }
++        [self resolve]; // Resolve is needed for correct visibility
++        scrollCount++;
++    }
++    
++    if (scrollCount >= maxScrollCount) {
++        return
++        [[[FBErrorBuilder builder]
++          withDescriptionFormat:@"Failed to perform scroll with visible cell due to max scroll count reached"]
++         buildError:error];
++    }
++    
++    // Cell is now visible, but it might be only partialy visible, scrolling till whole frame is visible
++    targetCellSnapshot = self.fb_parentCellSnapshot;
++    CGVector scrollVector = CGVectorMake(targetCellSnapshot.visibleFrame.size.width - targetCellSnapshot.frame.size.width,
++                                         targetCellSnapshot.visibleFrame.size.height - targetCellSnapshot.frame.size.height
++                                         );
++    if (![scrollView fb_scrollByVector:scrollVector error:error]) {
++        return NO;
++    }
++    return YES;
++}
++
++- (BOOL)fb_scrollToElementWithNormalizedScrollDistance:(CGFloat)normalizedScrollDistance error:(NSError **)error
++{
+   [self resolve];
+   if (self.fb_isVisible) {
+     return YES;
+@@ -96,12 +175,12 @@ - (BOOL)fb_scrollToVisibleWithNormalizedScrollDistance:(CGFloat)normalizedScroll
+   }
+   NSArray<XCElementSnapshot *> *visibleCellSnapshots = [cellSnapshots filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == YES", FBStringify(XCUIElement, fb_isVisible)]];
+ 
+-  if (visibleCellSnapshots.count < 2) {
+-    return
+-    [[[FBErrorBuilder builder]
+-      withDescriptionFormat:@"Failed to perform scroll with visible cell count %lu", (unsigned long)visibleCellSnapshots.count]
+-     buildError:error];
+-  }
++//  if (visibleCellSnapshots.count < 2) {
++//    return
++//    [[[FBErrorBuilder builder]
++//      withDescriptionFormat:@"Failed to perform scroll with visible cell count %lu", (unsigned long)visibleCellSnapshots.count]
++//     buildError:error];
++//  }
+   XCElementSnapshot *lastSnapshot = visibleCellSnapshots.lastObject;
+   NSUInteger targetCellIndex = [cellSnapshots indexOfObject:targetCellSnapshot];
+   NSUInteger visibleCellIndex = [cellSnapshots indexOfObject:lastSnapshot];
+diff --git a/WebDriverAgentLib/Commands/FBElementCommands.m b/WebDriverAgentLib/Commands/FBElementCommands.m
+index f31a60c..d0f0f85 100644
+--- a/WebDriverAgentLib/Commands/FBElementCommands.m
++++ b/WebDriverAgentLib/Commands/FBElementCommands.m
+@@ -237,6 +237,11 @@ + (NSArray *)routes
+   if (request.arguments[@"toVisible"]) {
+     return [self.class handleScrollElementToVisible:element withRequest:request];
+   }
++    
++  if (request.arguments[@"toElement"]) {
++    return [self.class handleScrollToElement:element withRequest:request];
++  }
++    
+   return FBResponseWithErrorFormat(@"Unsupported scroll type");
+ }
+ 
+@@ -302,4 +307,16 @@ + (NSArray *)routes
+   return FBResponseWithOK();
+ }
+ 
+++ (id<FBResponsePayload>)handleScrollToElement:(XCUIElement *)element withRequest:(FBRouteRequest *)request
++{
++    NSError *error;
++    if (!element.exists) {
++        return FBResponseWithErrorFormat(@"Can't scroll to element that does not exist");
++    }
++    if (![element fb_scrollToVisibleWithError:&error]) {
++        return FBResponseWithError(error);
++    }
++    return FBResponseWithOK();
++}
++
+ @end
+diff --git a/WebDriverAgentLib/Commands/FBFindElementCommands.m b/WebDriverAgentLib/Commands/FBFindElementCommands.m
+index 465a182..53d642a 100644
+--- a/WebDriverAgentLib/Commands/FBFindElementCommands.m
++++ b/WebDriverAgentLib/Commands/FBFindElementCommands.m
+@@ -52,7 +52,7 @@ + (NSArray *)routes
+ + (id<FBResponsePayload>)handleFindElement:(FBRouteRequest *)request
+ {
+   FBSession *session = request.session;
+-  XCUIElement *element = [self.class elementUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:session.application];
++    XCUIElement *element = [self.class elementUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:session.application];
+   if (!element) {
+     return FBNoSuchElementErrorResponseForRequest(request);
+   }
+@@ -62,7 +62,7 @@ + (NSArray *)routes
+ + (id<FBResponsePayload>)handleFindElements:(FBRouteRequest *)request
+ {
+   FBSession *session = request.session;
+-  NSArray *elements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:session.application];
++  NSArray *elements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:session.application first:NO];
+   return FBResponseWithCachedElements(elements, request.session.elementCache);
+ }
+ 
+@@ -91,7 +91,7 @@ + (NSArray *)routes
+ {
+   FBElementCache *elementCache = request.session.elementCache;
+   XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+-  NSArray *foundElements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:element];
++    NSArray *foundElements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:element first:NO];
+ 
+   if (foundElements.count == 0) {
+     return FBNoSuchElementErrorResponseForRequest(request);
+@@ -104,10 +104,10 @@ + (NSArray *)routes
+ 
+ + (XCUIElement *)elementUsing:(NSString *)usingText withValue:(NSString *)value under:(XCUIElement *)element
+ {
+-  return [[self elementsUsing:usingText withValue:value under:element] firstObject];
++    return [[self elementsUsing:usingText withValue:value under:element first:YES] firstObject];
+ }
+ 
+-+ (NSArray *)elementsUsing:(NSString *)usingText withValue:(NSString *)value under:(XCUIElement *)element
+++ (NSArray *)elementsUsing:(NSString *)usingText withValue:(NSString *)value under:(XCUIElement *)element first:(BOOL)first
+ {
+   NSArray *elements;
+   const BOOL partialSearch = [usingText isEqualToString:@"partial link text"];
+@@ -117,8 +117,10 @@ + (NSArray *)elementsUsing:(NSString *)usingText withValue:(NSString *)value und
+     elements = [element fb_descendantsMatchingProperty:components[0] value:components[1] partialSearch:partialSearch];
+   } else if ([usingText isEqualToString:@"class name"]) {
+     elements = [element fb_descendantsMatchingClassName:value];
++  } else if ([usingText isEqualToString:@"cellByIndex"]) {
++      elements = [element fb_descendantsMatchingCellByIndex:value];
+   } else if ([usingText isEqualToString:@"xpath"]) {
+-    elements = [element fb_descendantsMatchingXPathQuery:value];
++      elements = [element fb_descendantsMatchingXPathQuery:value first:first];
+   } else if ([usingText isEqualToString:@"predicate string"]) {
+     NSPredicate *predicate = [NSPredicate predicateWithFormat:value];
+     elements = [element fb_descendantsMatchingPredicate:predicate];

@@ -28,7 +28,7 @@
 - (void)pressDownWithPressure:(double)arg1 atOffset:(double)arg2;
 - (void)pressDownAtOffset:(double)arg1;
 - (id)initForMouseAtPoint:(struct CGPoint)arg1 offset:(double)arg2;
-- (id)initForTouchAtPoint:(struct CGPoint)arg1 offset:(double)arg2;
+- (id)initForTouchAtPoint:(CGPoint)arg1 offset:(double)arg2;
 - (id)init;
 
 @end

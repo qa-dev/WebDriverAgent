@@ -23,6 +23,10 @@
 - (void)setUp
 {
   [super setUp];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+  });
   XCUIElement *testedView = self.testedApplication.otherElements[@"MainView"];
   XCTAssertTrue(testedView.exists);
   [testedView resolve];
@@ -92,6 +96,11 @@
 - (void)testGetAccessibleAttribute
 {
   [self verifyGettingAttributeWithShortcut:@"accessible" expectedValue:[NSNumber numberWithBool:self.matchingElement.wdAccessible]];
+}
+
+- (void)testGetUidAttribute
+{
+  [self verifyGettingAttributeWithShortcut:@"UID" expectedValue:@(self.matchingElement.wdUID)];
 }
 
 - (void)testGetVisibleAttribute
