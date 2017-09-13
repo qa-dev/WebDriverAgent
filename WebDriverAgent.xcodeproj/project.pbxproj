@@ -76,6 +76,8 @@
 		EE158AB11CBD456F00A3E3F0 /* XCUIElement+FBIsVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9AB7481CAEDF0C008C271F /* XCUIElement+FBIsVisible.m */; };
 		EE158AB21CBD456F00A3E3F0 /* XCUIElement+FBScrolling.h in Headers */ = {isa = PBXBuildFile; fileRef = EE9AB7491CAEDF0C008C271F /* XCUIElement+FBScrolling.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EE158AB31CBD456F00A3E3F0 /* XCUIElement+FBScrolling.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9AB74A1CAEDF0C008C271F /* XCUIElement+FBScrolling.m */; };
+		EE158AB41CBD456F00A3E3F0 /* XCUIElement+FBTap.h in Headers */ = {isa = PBXBuildFile; fileRef = EE9AB74B1CAEDF0C008C271F /* XCUIElement+FBTap.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EE158AB51CBD456F00A3E3F0 /* XCUIElement+FBTap.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9AB74C1CAEDF0C008C271F /* XCUIElement+FBTap.m */; };
 		EE158AB81CBD456F00A3E3F0 /* FBAlertViewCommands.h in Headers */ = {isa = PBXBuildFile; fileRef = EE9AB7501CAEDF0C008C271F /* FBAlertViewCommands.h */; };
 		EE158AB91CBD456F00A3E3F0 /* FBAlertViewCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9AB7511CAEDF0C008C271F /* FBAlertViewCommands.m */; };
 		EE158ABA1CBD456F00A3E3F0 /* FBCustomCommands.h in Headers */ = {isa = PBXBuildFile; fileRef = EE9AB7521CAEDF0C008C271F /* FBCustomCommands.h */; };
@@ -626,8 +628,6 @@
 		EE9AB7481CAEDF0C008C271F /* XCUIElement+FBIsVisible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+FBIsVisible.m"; sourceTree = "<group>"; };
 		EE9AB7491CAEDF0C008C271F /* XCUIElement+FBScrolling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIElement+FBScrolling.h"; sourceTree = "<group>"; };
 		EE9AB74A1CAEDF0C008C271F /* XCUIElement+FBScrolling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+FBScrolling.m"; sourceTree = "<group>"; };
-		EE9AB74B1CAEDF0C008C271F /* XCUIElement+FBTap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIElement+FBTap.h"; sourceTree = "<group>"; };
-		EE9AB74C1CAEDF0C008C271F /* XCUIElement+FBTap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+FBTap.m"; sourceTree = "<group>"; };
 		EE9AB7501CAEDF0C008C271F /* FBAlertViewCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBAlertViewCommands.h; sourceTree = "<group>"; };
 		EE9AB7511CAEDF0C008C271F /* FBAlertViewCommands.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBAlertViewCommands.m; sourceTree = "<group>"; };
 		EE9AB7521CAEDF0C008C271F /* FBCustomCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBCustomCommands.h; sourceTree = "<group>"; };
