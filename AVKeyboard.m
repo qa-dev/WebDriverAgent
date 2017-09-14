@@ -30,7 +30,7 @@ static const NSUInteger AVTypingFrequency = 5;
   }
   __block BOOL didSucceed = NO;
   __block NSError *innerError;
-  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)()){
+  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)(void)){
     [[FBXCTestDaemonsProxy testRunnerProxy] _XCT_sendString:text maximumFrequency:AVTypingFrequency completion:^(NSError *typingError){
       didSucceed = (typingError == nil);
       innerError = typingError;
