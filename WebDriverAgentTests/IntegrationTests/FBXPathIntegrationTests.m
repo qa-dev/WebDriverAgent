@@ -25,6 +25,10 @@
 - (void)setUp
 {
   [super setUp];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+  });
   self.testedView = self.testedApplication.otherElements[@"MainView"];
   XCTAssertTrue(self.testedView.exists);
   [self.testedView resolve];
@@ -39,7 +43,7 @@
   NSString *xmlStr = [FBXPath xmlStringWithSnapshot:matchingSnapshot];
   XCTAssertNotNil(xmlStr);
 
-  NSString *expectedXml = [NSString stringWithFormat:@"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<%@ type=\"%@\" name=\"%@\" label=\"%@\" enabled=\"%@\" x=\"%@\" y=\"%@\" width=\"%@\" height=\"%@\"/>\n", expectedType, expectedType, matchingSnapshot.wdName, matchingSnapshot.wdLabel, matchingSnapshot.wdEnabled ? @"true" : @"false", [matchingSnapshot.wdRect[@"x"] stringValue], [matchingSnapshot.wdRect[@"y"] stringValue], [matchingSnapshot.wdRect[@"width"] stringValue], [matchingSnapshot.wdRect[@"height"] stringValue]];
+  NSString *expectedXml = [NSString stringWithFormat:@"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<%@ type=\"%@\" name=\"%@\" label=\"%@\" enabled=\"%@\" visible=\"%@\" x=\"%@\" y=\"%@\" width=\"%@\" height=\"%@\"/>\n", expectedType, expectedType, matchingSnapshot.wdName, matchingSnapshot.wdLabel, matchingSnapshot.wdEnabled ? @"true" : @"false", matchingSnapshot.wdVisible ? @"true" : @"false", [matchingSnapshot.wdRect[@"x"] stringValue], [matchingSnapshot.wdRect[@"y"] stringValue], [matchingSnapshot.wdRect[@"width"] stringValue], [matchingSnapshot.wdRect[@"height"] stringValue]];
   XCTAssertTrue([xmlStr isEqualToString: expectedXml]);
 }
 

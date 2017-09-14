@@ -92,18 +92,32 @@ NSString *const FBAlertObstructingElementException = @"FBAlertObstructingElement
   if (!alert) {
     return nil;
   }
-  NSArray<XCElementSnapshot *> *staticTextList = [alert.lastSnapshot fb_descendantsMatchingType:XCUIElementTypeStaticText];
-  NSMutableString *mText = [NSMutableString string];
-  for (XCElementSnapshot *staticText in staticTextList) {
+  NSArray<XCUIElement *> *staticTextList = [alert descendantsMatchingType:XCUIElementTypeStaticText].allElementsBoundByIndex;
+  NSMutableArray<NSString *> *resultText = [NSMutableArray array];
+  for (XCUIElement *staticText in staticTextList) {
     if (staticText.wdLabel && staticText.isWDVisible) {
-      [mText appendFormat:@"%@\n", staticText.wdLabel];
+      [resultText addObject:[NSString stringWithFormat:@"%@", staticText.wdLabel]];
     }
   }
-  // Removing last '\n'
-  if (mText.length > 0) {
-    [mText replaceCharactersInRange:NSMakeRange(mText.length - @"\n".length, @"\n".length) withString:@""];
+  if (resultText.count) {
+    return [resultText componentsJoinedByString:@"\n"];
   }
-  return mText.length > 0 ? mText.copy : [NSNull null];
+  // return null to reflect the fact there is an alert, but it does not contain any text
+  return (id)[NSNull null];
+}
+
+- (NSArray *)buttonLabels
+{
+  NSMutableArray *value = [NSMutableArray array];
+  XCUIElement *alertElement = self.alertElement;
+  if (!alertElement) {
+    return nil;
+  }
+  NSArray<XCUIElement *> *buttons = [alertElement descendantsMatchingType:XCUIElementTypeButton].allElementsBoundByIndex;
+  for(XCUIElement *button in buttons) {
+    [value addObject:[button wdLabel]];
+  }
+  return value;
 }
 
 - (BOOL)acceptWithError:(NSError **)error
@@ -147,17 +161,40 @@ NSString *const FBAlertObstructingElementException = @"FBAlertObstructingElement
   return [cancelButton fb_tapWithError:error];
 }
 
+- (BOOL)clickAlertButton:(NSString *)label error:(NSError **)error {
+  
+  XCUIElement *alertElement = self.alertElement;
+  NSArray<XCUIElement *> *buttons = [alertElement descendantsMatchingType:XCUIElementTypeButton].allElementsBoundByIndex;
+  XCUIElement *requestedButton;
+  
+  for(XCUIElement *button in buttons) {
+    if([[button wdLabel] isEqualToString:label]){
+      requestedButton = button;
+      break;
+    }
+  }
+  
+  if(!requestedButton) {
+    return
+    [[[FBErrorBuilder builder]
+      withDescriptionFormat:@"Failed to find button with label %@ for alert: %@", label, alertElement]
+     buildError:error];
+  }
+  
+  return [requestedButton fb_tapWithError:error];
+}
+
 + (BOOL)isElementObstructedByAlertView:(XCUIElement *)element alert:(XCUIElement *)alert
 {
   if (!alert.exists) {
     return NO;
   }
-  [alert resolve];
-  [element resolve];
-  if ([alert.lastSnapshot _isAncestorOfElement:element.lastSnapshot]) {
+  XCElementSnapshot *alertSnapshot = alert.fb_lastSnapshot;
+  XCElementSnapshot *elementSnapshot = element.fb_lastSnapshot;
+  if ([alertSnapshot _isAncestorOfElement:elementSnapshot]) {
     return NO;
   }
-  if ([alert.lastSnapshot _matchesElement:element.lastSnapshot]) {
+  if ([alertSnapshot _matchesElement:elementSnapshot]) {
     return NO;
   }
   return YES;

@@ -9,8 +9,11 @@
 
 #import "XCUIElement+FBTyping.h"
 
+#import "FBErrorBuilder.h"
 #import "FBKeyboard.h"
 #import "XCUIElement+AVTap.h"
+#import "NSString+FBVisualLength.h"
+//#import "XCUIElement+FBTap.h"
 
 @implementation XCUIElement (FBTyping)
 
@@ -27,13 +30,18 @@
 
 - (BOOL)fb_clearTextWithError:(NSError **)error
 {
-  NSMutableString *textToType = @"".mutableCopy;
-  const NSUInteger textLength = [self.value length];
-  for (NSUInteger i = 0 ; i < textLength ; i++) {
-    [textToType appendString:@"\b"];
-  }
-  if (![self fb_typeText:textToType error:error]) {
-    return NO;
+  NSUInteger preClearTextLength = 0;
+  NSData *encodedSequence = [@"\\u0008\\u007F" dataUsingEncoding:NSASCIIStringEncoding];
+  NSString *backspaceDeleteSequence = [[NSString alloc] initWithData:encodedSequence encoding:NSNonLossyASCIIStringEncoding];
+  while ([self.value fb_visualLength] != preClearTextLength) {
+    NSMutableString *textToType = @"".mutableCopy;
+    preClearTextLength = [self.value fb_visualLength];
+    for (NSUInteger i = 0 ; i < preClearTextLength ; i++) {
+      [textToType appendString:backspaceDeleteSequence];
+    }
+    if (![self fb_typeText:textToType error:error]) {
+      return NO;
+    }
   }
   return YES;
 }

@@ -23,7 +23,11 @@
 - (void)setUp
 {
   [super setUp];
-  [self goToAttributesPage];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+    [self goToAttributesPage];
+  });
 }
 
 - (void)testElementAccessibilityAttributes
@@ -63,7 +67,7 @@
   XCTAssertNil(element.wdValue);
   [element tap];
   [element resolve];
-  XCTAssertEqualObjects(element.wdValue, @YES);
+  XCTAssertEqual(element.wdValue.boolValue, YES);
 }
 
 - (void)testLabelAttributes
@@ -133,10 +137,10 @@
   XCTAssertEqualObjects(element.wdType, @"XCUIElementTypeSwitch");
   XCTAssertNil(element.wdName);
   XCTAssertNil(element.wdLabel);
-  XCTAssertEqualObjects(element.wdValue, @1);
+  XCTAssertEqualObjects(element.wdValue, @"1");
   [element tap];
   [element resolve];
-  XCTAssertEqualObjects(element.wdValue, @0);
+  XCTAssertEqualObjects(element.wdValue, @"0");
 }
 
 - (void)testPickerWheelAttributes

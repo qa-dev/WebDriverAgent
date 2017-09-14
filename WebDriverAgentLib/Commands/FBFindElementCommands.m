@@ -10,11 +10,13 @@
 #import "FBFindElementCommands.h"
 
 #import "FBAlert.h"
+#import "FBConfiguration.h"
 #import "FBElementCache.h"
 #import "FBExceptionHandler.h"
 #import "FBRouteRequest.h"
 #import "FBMacros.h"
 #import "FBElementCache.h"
+#import "FBPredicate.h"
 #import "FBSession.h"
 #import "FBApplication.h"
 #import "XCUIElement+FBFind.h"
@@ -58,7 +60,7 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   if (!element) {
     return FBNoSuchElementErrorResponseForRequest(request);
   }
-  return FBResponseWithCachedElement(element, request.session.elementCache);
+  return FBResponseWithCachedElement(element, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
 + (id<FBResponsePayload>)handleFindElements:(FBRouteRequest *)request
@@ -66,16 +68,16 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   FBSession *session = request.session;
   NSArray *elements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:session.application
                     shouldReturnAfterFirstMatch:NO];
-  return FBResponseWithCachedElements(elements, request.session.elementCache, NO);
+  return FBResponseWithCachedElements(elements, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
 + (id<FBResponsePayload>)handleFindVisibleCells:(FBRouteRequest *)request
 {
   FBElementCache *elementCache = request.session.elementCache;
   XCUIElement *collection = [elementCache elementForUUID:request.parameters[@"uuid"]];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == YES", FBStringify(XCUIElement, fb_isVisible)];
+  NSPredicate *predicate = [FBPredicate predicateWithFormat:@"%K == YES", FBStringify(XCUIElement, fb_isVisible)];
   NSArray *elements = [collection.cells matchingPredicate:predicate].allElementsBoundByIndex;
-  return FBResponseWithCachedElements(elements, request.session.elementCache, YES);
+  return FBResponseWithCachedElements(elements, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
 + (id<FBResponsePayload>)handleFindSubElement:(FBRouteRequest *)request
@@ -86,7 +88,7 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   if (!foundElement) {
     return FBNoSuchElementErrorResponseForRequest(request);
   }
-  return FBResponseWithCachedElement(foundElement, request.session.elementCache);
+  return FBResponseWithCachedElement(foundElement, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
 + (id<FBResponsePayload>)handleFindSubElements:(FBRouteRequest *)request
@@ -96,7 +98,7 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   NSArray *foundElements = [self.class elementsUsing:request.arguments[@"using"] withValue:request.arguments[@"value"] under:element
                          shouldReturnAfterFirstMatch:NO];
 
-  return FBResponseWithCachedElements(foundElements, request.session.elementCache, NO);
+  return FBResponseWithCachedElements(foundElements, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
 
@@ -126,7 +128,7 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   } else if ([usingText isEqualToString:@"xpath"]) {
     elements = [element fb_descendantsMatchingXPathQuery:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"predicate string"]) {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:value];
+    NSPredicate *predicate = [FBPredicate predicateWithFormat:value];
     elements = [element fb_descendantsMatchingPredicate:predicate shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if (isSearchByIdentifier) {
     elements = [element fb_descendantsMatchingIdentifier:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];

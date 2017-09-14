@@ -32,6 +32,7 @@
 - (void)setUp
 {
   [super setUp];
+  [self launchApplication];
   [self goToScrollPageWithCells:[self.class shouldShowCells]];
   self.scrollView = [[self.testedApplication.query descendantsMatchingType:XCUIElementTypeAny] matchingIdentifier:@"scrollView"].element;
   [self.scrollView resolve];
@@ -49,11 +50,11 @@
 {
   FBAssertVisibleCell(@"0");
   FBAssertVisibleCell(@"10");
-  [self.scrollView fb_scrollDown];
+  [self.scrollView fb_scrollDownByNormalizedDistance:1.0];
   FBAssertInvisibleCell(@"0");
   FBAssertInvisibleCell(@"10");
   XCTAssertTrue(self.testedApplication.staticTexts.count > 0);
-  [self.scrollView fb_scrollUp];
+  [self.scrollView fb_scrollUpByNormalizedDistance:1.0];
   FBAssertVisibleCell(@"0");
   FBAssertVisibleCell(@"10");
 }

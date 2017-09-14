@@ -16,32 +16,43 @@
 #import "XCUIElement+FBUtilities.h"
 #import "XCEventGenerator.h"
 #import "XCSynthesizedEventRecord.h"
+#import "XCElementSnapshot+FBHitPoint.h"
+#import "XCPointerEventPath.h"
+#import "XCTRunnerDaemonSession.h"
+
+const CGFloat FBTapDuration = 0.01f;
 
 @implementation XCUIElement (FBTap)
 
 - (BOOL)fb_tapWithError:(NSError **)error
 {
-  NSValue *hitpointValue = self.lastSnapshot.suggestedHitpoints.firstObject;
-  CGPoint hitPoint = hitpointValue ? hitpointValue.CGPointValue : [self coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)].screenPoint;
-  hitPoint.x -= self.frame.origin.x;
-  hitPoint.y -= self.frame.origin.y;
-  return [self fb_tapCoordinate:hitPoint error:error];
+  XCElementSnapshot *snapshot = self.fb_lastSnapshot;
+  CGPoint hitpoint = snapshot.fb_hitPoint;
+  if (CGPointEqualToPoint(hitpoint, CGPointMake(-1, -1))) {
+    hitpoint = [snapshot.suggestedHitpoints.lastObject CGPointValue];
+  }
+  return [self fb_performTapAtPoint:hitpoint error:error];
 }
 
 - (BOOL)fb_tapCoordinate:(CGPoint)relativeCoordinate error:(NSError **)error
 {
+  CGPoint hitPoint = CGPointMake(self.frame.origin.x + relativeCoordinate.x, self.frame.origin.y + relativeCoordinate.y);
+  if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
+    /*
+     Since iOS 10.0 XCTest has a bug when it always returns portrait coordinates for UI elements
+     even if the device is not in portait mode. That is why we need to recalculate them manually
+     based on the current orientation value
+     */
+    hitPoint = FBInvertPointForApplication(hitPoint, self.application.frame.size, self.application.interfaceOrientation);
+  }
+  return [self fb_performTapAtPoint:hitPoint error:error];
+}
+
+- (BOOL)fb_performTapAtPoint:(CGPoint)hitPoint error:(NSError *__autoreleasing*)error
+{
   [self fb_waitUntilFrameIsStable];
   __block BOOL didSucceed;
-  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)()){
-    CGPoint hitPoint = CGPointMake(self.frame.origin.x + relativeCoordinate.x, self.frame.origin.y + relativeCoordinate.y);
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
-      /*
-       Since iOS 10.0 XCTest has a bug when it always returns portrait coordinates for UI elements
-       even if the device is not in portait mode. That is why we need to recalculate them manually
-       based on the current orientation value
-       */
-      hitPoint = FBInvertPointForApplication(hitPoint, self.application.frame.size, self.application.interfaceOrientation);
-    }
+  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)(void)){
     XCEventGeneratorHandler handlerBlock = ^(XCSynthesizedEventRecord *record, NSError *commandError) {
       if (commandError) {
         [FBLogger logFmt:@"Failed to perform tap: %@", commandError];
@@ -52,15 +63,28 @@
       didSucceed = (commandError == nil);
       completion();
     };
-    XCEventGenerator *eventGenerator = [XCEventGenerator sharedGenerator];
-    if ([eventGenerator respondsToSelector:@selector(tapAtTouchLocations:numberOfTaps:orientation:handler:)]) {
-      [eventGenerator tapAtTouchLocations:@[[NSValue valueWithCGPoint:hitPoint]] numberOfTaps:1 orientation:self.interfaceOrientation handler:handlerBlock];
-    }
-    else {
-      [eventGenerator tapAtPoint:hitPoint orientation:self.interfaceOrientation handler:handlerBlock];
-    }
+
+    XCSynthesizedEventRecord *event = [self fb_generateTapEvent:hitPoint orientation:self.interfaceOrientation];
+    [[XCTRunnerDaemonSession sharedSession] synthesizeEvent:event completion:^(NSError *invokeError){
+      handlerBlock(event, invokeError);
+    }];
   }];
   return didSucceed;
+}
+
+- (XCSynthesizedEventRecord *)fb_generateTapEvent:(CGPoint)hitPoint orientation:(UIInterfaceOrientation)orientation
+{
+  XCPointerEventPath *eventPath = [[XCPointerEventPath alloc] initForTouchAtPoint:hitPoint offset:0.0];
+  [eventPath liftUpAtOffset:FBTapDuration];
+  if (![XCTRunnerDaemonSession sharedSession].useLegacyEventCoordinateTransformationPath) {
+    orientation = UIInterfaceOrientationPortrait;
+  }
+  XCSynthesizedEventRecord *event =
+  [[XCSynthesizedEventRecord alloc]
+   initWithName:[NSString stringWithFormat:@"Tap on %@", NSStringFromCGPoint(hitPoint)]
+   interfaceOrientation:orientation];
+  [event addPointerEventPath:eventPath];
+  return event;
 }
 
 @end

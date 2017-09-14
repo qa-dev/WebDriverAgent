@@ -17,11 +17,11 @@
 
 @implementation XCUIElement (AVTap)
 
-- (BOOL)av_tapForClearWithError:(NSError **)error
+- (BOOL)av_tapForClearWithError:(NSError * __autoreleasing *)error
 {
   [self fb_waitUntilFrameIsStable];
   __block BOOL didSucceed;
-  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)()){
+  [FBRunLoopSpinner spinUntilCompletion:^(void(^completion)(void)){
     CGPoint hitPoint = [self coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)].screenPoint;
     XCEventGeneratorHandler handlerBlock = ^(XCSynthesizedEventRecord *record, NSError *commandError) {
       if (commandError) {

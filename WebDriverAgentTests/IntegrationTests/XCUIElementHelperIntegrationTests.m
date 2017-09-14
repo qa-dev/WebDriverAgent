@@ -13,8 +13,8 @@
 #import "FBIntegrationTestCase.h"
 #import "FBTestMacros.h"
 #import "FBElement.h"
-#import "XCUIElement+FBUtilities.h"
 #import "FBElementUtils.h"
+#import "XCUIElement+FBUtilities.h"
 
 @interface XCUIElementHelperIntegrationTests : FBIntegrationTestCase
 @end
@@ -24,6 +24,7 @@
 - (void)setUp
 {
   [super setUp];
+  [self launchApplication];
   [self goToAlertsPage];
 }
 
@@ -53,22 +54,23 @@
   XCTAssertFalse([alert fb_obstructsElement:acceptAlertButton]);
 }
 
-- (void)testDescendantsCategorizationByType
+- (void)testDescendantsFiltering
 {
-  NSArray *buttons = [self.testedApplication.buttons allElementsBoundByIndex];
-  NSArray *sameButtons = [self.testedApplication.buttons allElementsBoundByIndex];
-  NSArray *windows = [self.testedApplication.windows allElementsBoundByIndex];
+  NSArray<XCUIElement *> *buttons = [self.testedApplication.buttons allElementsBoundByIndex];
+  XCTAssertTrue(buttons.count > 0);
+  NSArray<XCUIElement *> *windows = [self.testedApplication.windows allElementsBoundByIndex];
+  XCTAssertTrue(windows.count > 0);
   
-  NSMutableArray *allElements = [NSMutableArray array];
+  NSMutableArray<XCUIElement *> *allElements = [NSMutableArray array];
   [allElements addObjectsFromArray:buttons];
-  [allElements addObjectsFromArray:sameButtons];
   [allElements addObjectsFromArray:windows];
   
-  NSSet *byTypes = [FBElementUtils uniqueElementTypesWithElements:allElements];
-  NSDictionary *categorizedDescendants = [self.testedApplication fb_categorizeDescendants:byTypes];
-  XCTAssertEqual(2, [categorizedDescendants count]);
-  XCTAssertEqual([categorizedDescendants[@(XCUIElementTypeButton)] count], [buttons count]);
-  XCTAssertEqual([categorizedDescendants[@(XCUIElementTypeWindow)] count], [windows count]);
+  NSMutableArray<XCElementSnapshot *> *buttonSnapshots = [NSMutableArray array];
+  [buttonSnapshots addObject:[buttons.firstObject fb_lastSnapshot]];
+  
+  NSArray<XCUIElement *> *result = [self.testedApplication fb_filterDescendantsWithSnapshots:buttonSnapshots];
+  XCTAssertEqual(1, result.count);
+  XCTAssertEqual([result.firstObject elementType], XCUIElementTypeButton);
 }
 
 @end

@@ -10,7 +10,9 @@
 
 #import "XCUIElement+FBFind.h"
 
+#import "FBMacros.h"
 #import "FBElementTypeTransformer.h"
+#import "FBPredicate.h"
 #import "NSPredicate+FBFormat.h"
 #import "XCElementSnapshot.h"
 #import "XCElementSnapshot+FBHelpers.h"
@@ -78,7 +80,8 @@
   NSString *operation = partialSearch ?
   [NSString stringWithFormat:@"%@ like '*%@*'", property, value] :
   [NSString stringWithFormat:@"%@ == '%@'", property, value];
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:operation];
+
+  NSPredicate *predicate = [FBPredicate predicateWithFormat:operation];
   XCUIElementQuery *query = [[self descendantsMatchingType:XCUIElementTypeAny] matchingPredicate:predicate];
   NSArray *childElements = [query allElementsBoundByIndex];
   [results addObjectsFromArray:childElements];
@@ -90,8 +93,17 @@
 - (NSArray<XCUIElement *> *)fb_descendantsMatchingPredicate:(NSPredicate *)predicate shouldReturnAfterFirstMatch:(BOOL)shouldReturnAfterFirstMatch
 {
   NSPredicate *formattedPredicate = [NSPredicate fb_formatSearchPredicate:predicate];
+  NSMutableArray<XCUIElement *> *result = [NSMutableArray array];
+  // Include self element into predicate search
+  if ([formattedPredicate evaluateWithObject:self.fb_lastSnapshot]) {
+    if (shouldReturnAfterFirstMatch) {
+      return @[self];
+    }
+    [result addObject:self];
+  }
   XCUIElementQuery *query = [[self descendantsMatchingType:XCUIElementTypeAny] matchingPredicate:formattedPredicate];
-  return [self.class fb_extractMatchingElementsFromQuery:query shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
+  [result addObjectsFromArray:[self.class fb_extractMatchingElementsFromQuery:query shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch]];
+  return result.copy;
 }
 
 
@@ -101,7 +113,8 @@
 {
   // XPath will try to match elements only class name, so requesting elements by XCUIElementTypeAny will not work. We should use '*' instead.
   xpathQuery = [xpathQuery stringByReplacingOccurrencesOfString:@"XCUIElementTypeAny" withString:@"*"];
-  return [self.lastSnapshot fb_descendantsMatchingXPathQuery:xpathQuery];
+  [self fb_waitUntilSnapshotIsStable];
+  return [self.fb_lastSnapshot fb_descendantsMatchingXPathQuery:xpathQuery];
 }
 
 - (NSArray<XCUIElement *> *)fb_descendantsMatchingXPathQuery:(NSString *)xpathQuery shouldReturnAfterFirstMatch:(BOOL)shouldReturnAfterFirstMatch
@@ -111,32 +124,10 @@
     return @[];
   }
   if (shouldReturnAfterFirstMatch) {
-    matchingSnapshots = @[[matchingSnapshots firstObject]];
+    XCElementSnapshot *snapshot = matchingSnapshots.firstObject;
+    matchingSnapshots = @[snapshot];
   }
-  // Prefiltering elements speeds up search by XPath a lot, because [element resolve] is the most expensive operation here
-  NSSet *byTypes = [FBElementUtils uniqueElementTypesWithElements:matchingSnapshots];
-  NSDictionary *categorizedDescendants = [self fb_categorizeDescendants:byTypes];
-  NSArray *matchingElements = [self.class fb_filterElements:categorizedDescendants matchingSnapshots:matchingSnapshots useReversedOrder:[xpathQuery containsString:@"last()"]];
-  return matchingElements;
-}
-
-+ (NSArray<XCUIElement *> *)fb_filterElements:(NSDictionary<NSNumber *, NSArray<XCUIElement *> *> *)elementsMap matchingSnapshots:(NSArray<XCElementSnapshot *> *)snapshots useReversedOrder:(BOOL)useReversedOrder
-{
-  NSMutableArray *matchingElements = [NSMutableArray array];
-  [snapshots enumerateObjectsUsingBlock:^(XCElementSnapshot *snapshot, NSUInteger snapshotIdx, BOOL *stopSnapshotEnum) {
-    NSArray *elements = elementsMap[@(snapshot.elementType)];
-    NSEnumerator *elementsEnumerator = [elements objectEnumerator];
-    if (useReversedOrder) {
-      elementsEnumerator = [elements reverseObjectEnumerator];
-    }
-    for (XCUIElement *element in elementsEnumerator) {
-      if ([element.fb_lastSnapshot _matchesElement:snapshot]) {
-        [matchingElements addObject:element];
-        break;
-      }
-    };
-  }];
-  return matchingElements.copy;
+  return [self fb_filterDescendantsWithSnapshots:matchingSnapshots];
 }
 
 

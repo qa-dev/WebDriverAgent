@@ -21,6 +21,12 @@
 
 @implementation XCUIApplicationHelperTests
 
+- (void)setUp
+{
+  [super setUp];
+  [self launchApplication];
+}
+
 - (void)testQueringSpringboard
 {
   [self goToSpringBoardFirstPage];
@@ -70,14 +76,6 @@
   XCTAssertTrue([FBApplication fb_activeApplication].buttons[@"Alerts"].fb_isVisible);
   [self goToSpringBoardFirstPage];
   XCTAssertTrue([FBApplication fb_activeApplication].icons[@"Safari"].fb_isVisible);
-}
-
-- (void)testMainWindow
-{
-  [self.testedApplication query];
-  [self.testedApplication resolve];
-  XCTAssertNotNil(self.testedApplication.fb_mainWindowSnapshot);
-  XCTAssertTrue(self.testedApplication.fb_mainWindowSnapshot.isMainWindow);
 }
 
 @end
