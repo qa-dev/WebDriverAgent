@@ -167,7 +167,8 @@
       NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
       //      query = [query matchingPredicate:predicateObj];
       if ([query count] > 1) {
-        element = [query firstMatch];
+        resElements = [query allElementsBoundByIndex];
+        element = [resElements lastObject];
       } else {
         element = [query elementMatchingPredicate:predicateObj];
         
