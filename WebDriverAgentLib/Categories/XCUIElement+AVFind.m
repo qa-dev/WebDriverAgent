@@ -153,46 +153,57 @@
       }
     }
   }
-  
-  XCUIElement *element;
-  NSArray<XCUIElement *> *resElements;
-  
+
   // Применение условий к запросу элемента
   if (hasPredicate) {
     if ([predicate hasPrefix:@"id"]) {
       NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
       query = [query matchingIdentifier:explodeResult[1]];
-      element = [query firstMatch];
     } else {
       NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
-      //      query = [query matchingPredicate:predicateObj];
-      if ([query count] > 1) {
-        resElements = [query allElementsBoundByIndex];
-        element = [resElements lastObject];
-      } else {
-        element = [query elementMatchingPredicate:predicateObj];
-        
-      }
-    }
-    resElements = [NSArray arrayWithObject:element];
-  } else {
-    // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
-    NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
-    if (hasIndex) {
-      if ([index isEqualToString:@"last"]) {
-        element = [elements lastObject];
-        resElements = [NSArray arrayWithObject:element];
-      } else {
-        if ([elements count] > (NSUInteger) [index integerValue]) {
-          element = [elements objectAtIndex:[index intValue]];
-          resElements = [NSArray arrayWithObject:element];
-        }
-      }
-    } else {
-      resElements = elements;
+      query = [query matchingPredicate:predicateObj];
     }
   }
-  
+
+  // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
+  XCUIElement *element;
+  NSArray<XCUIElement *> *resElements;
+  NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
+
+//  if ([predicate hasPrefix:@"id"]) {
+//    NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
+//    query = [query matchingIdentifier:explodeResult[1]];
+//    element = [query firstMatch];
+//  } else {
+//    NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
+//    //      query = [query matchingPredicate:predicateObj];
+//    if ([query count] > 0) {
+//      resElements = [query allElementsBoundByIndex];
+//      element = [resElements lastObject];
+//    } else {
+//      element = [query elementMatchingPredicate:predicateObj];
+//
+//    }
+//  }
+  if (hasPredicate && [query count] == 0 && ![predicate hasPrefix:@"id"]) {
+    NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
+    element = [query elementMatchingPredicate:predicateObj];
+    elements = [NSArray arrayWithObject:element];
+  }
+
+  if (hasIndex) {
+    if ([index isEqualToString:@"last"]) {
+      element = [elements lastObject];
+      resElements = [NSArray arrayWithObject:element];
+    } else {
+        if ([elements count] > (NSUInteger) [index integerValue]) {
+            element = [elements objectAtIndex:[index intValue]];
+            resElements = [NSArray arrayWithObject:element];
+        }
+    }
+  } else {
+      resElements = elements;
+  }
   return resElements;
 }
 
