@@ -17,7 +17,7 @@
 
 #pragma mark - Search by Xui
 
-- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator
+- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator shouldReturnAfterFirstMatch:(BOOL)shouldReturnAfterFirstMatch
 {
   // Делим локатор по вертикальной черте на элементы.
   NSMutableArray *resultElementList = [NSMutableArray array];
@@ -25,23 +25,30 @@
   NSError *error = nil;
   // Создаем регулярку для парсинга одной части локатора.
   NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^(\\.{0,1})([A-Za-z\\*]*)(\\(.+\\))*(\\[[0-9a-z]+\\]){0,1}$" options:NSRegularExpressionCaseInsensitive error:&error];
-
+  
   __block XCUIElement *currentElement = self;
   __block NSArray<XCUIElement *> *currentElements;
-
+  
   // Цикл обходит все элементы локатора.
   [tokens enumerateObjectsUsingBlock:^(NSString *token, NSUInteger tokenIdx, BOOL *stopTokenEnum) {
-      NSTextCheckingResult *regRes = [self av_parsePartOfLocator:regex locator:token];
-      XCUIElementQuery *query = [self av_getQueryByType:regRes locator:token element:currentElement];
-      currentElements = [self av_getElements:regRes locator:token query:query];
-      if ([currentElements count] > 0) {
-          currentElement = [currentElements objectAtIndex:0];
-      }
+    NSTextCheckingResult *regRes = [self av_parsePartOfLocator:regex locator:token];
+    XCUIElementQuery *query = [self av_getQueryByType:regRes locator:token element:currentElement];
+    currentElements = [self av_getElements:regRes locator:token query:query];
+    if ([currentElements count] > 0) {
+      currentElement = [currentElements objectAtIndex:0];
+    }
   }];
-
-//  [resultElementList addObject:currentElement];
+  
+  //  [resultElementList addObject:currentElement];
   resultElementList = [NSMutableArray arrayWithArray:currentElements];
-  return resultElementList.copy;
+  if (!shouldReturnAfterFirstMatch) {
+    return resultElementList;
+  }
+  XCUIElement *matchedElement = [resultElementList objectAtIndex:0];
+  if (matchedElement) {
+    return @[matchedElement];
+  }
+  return @[];
 }
 
 - (NSArray *)av_parseLocator:(NSString *)locator {
@@ -68,7 +75,7 @@
   NSString *type = [locator substringWithRange:typeRange];
   NSInteger elementType ;
   XCUIElementQuery *query;
-
+  
   // Если тип указан как звездочка, значит берем любой элемент, если указан пробрасываем его.
   if ([type isEqualToString:@"*"]) {
     elementType = XCUIElementTypeAny;
@@ -76,7 +83,7 @@
     NSString *typeName = [@"XCUIElementType" stringByAppendingString:type];
     elementType = [FBElementTypeTransformer elementTypeWithTypeName:typeName];
   }
-
+  
   // Если в начале стоит точка, то мы берем ребенка, если нет, то потомка.
   if ([childChar isEqualToString:@"."]) {
     query = [element childrenMatchingType:elementType];
@@ -87,20 +94,20 @@
 }
 
 - (NSArray<XCUIElement *> *)av_getElements:(NSTextCheckingResult *)regRes
-                       locator:(NSString *)locator
-                       query:(XCUIElementQuery *)query
+                                   locator:(NSString *)locator
+                                     query:(XCUIElementQuery *)query
 {
   // Инициализируем переменные для условия.
   Boolean hasPredicate = false;
   NSString *predicate;
-
+  
   // Инициализируем переменные для индекса.
   Boolean hasIndex = false;
   NSString *index;
-
+  
   // Получае количество совпандений в строки по регулярному вырожению.
   NSInteger countMatches = [regRes numberOfRanges];
-
+  
   // В цикле перебераем оставшиеся части локатора элемента.
   for (NSInteger i = 3; i < countMatches; i++) {
     NSRange optionRange = [regRes rangeAtIndex:i];
@@ -110,7 +117,7 @@
     }
     // Получем строку совпадения.
     NSString *option = [locator substringWithRange:optionRange];
-
+    
     // Проверяем является ли часть локатора элемента условием с помощью regex, если является сохраняем информацию
     // в перменные и переходим к следующей итерации.
     NSError *errorCond = nil;
@@ -128,7 +135,7 @@
         continue;
       }
     }
-
+    
     // Проверяем является ли часть локатора элемента индексом с помощью regex, если является сохраняем информацию
     // в перменные.
     NSError *errorInd = nil;
@@ -146,35 +153,41 @@
       }
     }
   }
-
+  
+  XCUIElement *element;
+  NSArray<XCUIElement *> *resElements;
+  
   // Применение условий к запросу элемента
   if (hasPredicate) {
     if ([predicate hasPrefix:@"id"]) {
       NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
       query = [query matchingIdentifier:explodeResult[1]];
-    } else {
-      NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
-      query = [query matchingPredicate:predicateObj];
-    }
-  }
-
-  // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
-  XCUIElement *element;
-  NSArray<XCUIElement *> *resElements;
-  NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
-  if (hasIndex) {
-    if ([index isEqualToString:@"last"]) {
-      element = [elements lastObject];
+      element = [query firstMatch];
       resElements = [NSArray arrayWithObject:element];
     } else {
-        if ([elements count] > (NSUInteger) [index integerValue]) {
-            element = [elements objectAtIndex:[index intValue]];
-            resElements = [NSArray arrayWithObject:element];
-        }
+      NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
+      //      query = [query matchingPredicate:predicateObj];
+      element = [query elementMatchingPredicate:predicateObj];
+      resElements = [NSArray arrayWithObject:element];
     }
   } else {
+    // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
+    NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
+    if (hasIndex) {
+      if ([index isEqualToString:@"last"]) {
+        element = [elements lastObject];
+        resElements = [NSArray arrayWithObject:element];
+      } else {
+        if ([elements count] > (NSUInteger) [index integerValue]) {
+          element = [elements objectAtIndex:[index intValue]];
+          resElements = [NSArray arrayWithObject:element];
+        }
+      }
+    } else {
       resElements = elements;
+    }
   }
+  
   return resElements;
 }
 
