@@ -163,13 +163,17 @@
       NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
       query = [query matchingIdentifier:explodeResult[1]];
       element = [query firstMatch];
-      resElements = [NSArray arrayWithObject:element];
     } else {
       NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
       //      query = [query matchingPredicate:predicateObj];
-      element = [query elementMatchingPredicate:predicateObj];
-      resElements = [NSArray arrayWithObject:element];
+      if ([query count] > 1) {
+        element = [query firstMatch];
+      } else {
+        element = [query elementMatchingPredicate:predicateObj];
+        
+      }
     }
+    resElements = [NSArray arrayWithObject:element];
   } else {
     // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
     NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
