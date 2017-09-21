@@ -32,7 +32,7 @@ NSString *const FBApplicationCrashedException = @"FBApplicationCrashedException"
 static FBSession *_activeSession;
 + (instancetype)activeSession
 {
-  return _activeSession ?: [FBSession sessionWithApplication:nil];
+  return _activeSession ?: nil;
 }
 
 + (void)killAll

@@ -20,6 +20,7 @@
 #import "FBSession.h"
 #import "FBApplication.h"
 #import "XCUIElement+FBFind.h"
+#import "XCUIElement+AVFind.h"
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElement+FBClassChain.h"
 
@@ -122,6 +123,8 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
     elements = [element fb_descendantsMatchingClassName:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"class chain"]) {
     elements = [element fb_descendantsMatchingClassChain:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
+  } else if ([usingText isEqualToString:@"xui"]) {
+    elements = [element av_descendantsMatchingXui:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"xpath"]) {
     elements = [element fb_descendantsMatchingXPathQuery:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
   } else if ([usingText isEqualToString:@"predicate string"]) {

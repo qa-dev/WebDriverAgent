@@ -1,0 +1,180 @@
+diff --git a/WebDriverAgent.xcodeproj/project.pbxproj b/WebDriverAgent.xcodeproj/project.pbxproj
+index 3ac9609e..82926b0f 100644
+--- a/WebDriverAgent.xcodeproj/project.pbxproj
++++ b/WebDriverAgent.xcodeproj/project.pbxproj
+@@ -54,6 +54,8 @@
+ 		ADDA07241D6BB2BF001700AC /* FBScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ADDA07231D6BB2BF001700AC /* FBScrollViewController.m */; };
+ 		ADEF63AD1D09DCCF0070A7E3 /* FBXPathCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = ADEF63AC1D09DCCF0070A7E3 /* FBXPathCreatorTests.m */; };
+ 		ADEF63AF1D09DEBE0070A7E3 /* FBRuntimeUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = ADEF63AE1D09DEBE0070A7E3 /* FBRuntimeUtilsTests.m */; };
++		CAC5C1087AA52D0B87587A31 /* XCUIElement+AVFind.h in Headers */ = {isa = PBXBuildFile; fileRef = CAC5C82EDD2A40DC7E8770D3 /* XCUIElement+AVFind.h */; };
++		CAC5C33A253E3BA9A3C82ED0 /* XCUIElement+AVFind.m in Sources */ = {isa = PBXBuildFile; fileRef = CAC5C2403DBE2BCFECA8D62D /* XCUIElement+AVFind.m */; };
+ 		EE006EAD1EB99B15006900A4 /* FBElementVisibilityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EE006EAC1EB99B15006900A4 /* FBElementVisibilityTests.m */; };
+ 		EE006EB01EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = EE006EAE1EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.h */; };
+ 		EE006EB11EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = EE006EAF1EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.m */; };
+@@ -445,6 +447,8 @@
+ 		ADDA07231D6BB2BF001700AC /* FBScrollViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBScrollViewController.m; sourceTree = "<group>"; };
+ 		ADEF63AC1D09DCCF0070A7E3 /* FBXPathCreatorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXPathCreatorTests.m; sourceTree = "<group>"; };
+ 		ADEF63AE1D09DEBE0070A7E3 /* FBRuntimeUtilsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBRuntimeUtilsTests.m; sourceTree = "<group>"; };
++		CAC5C2403DBE2BCFECA8D62D /* XCUIElement+AVFind.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIElement+AVFind.m"; sourceTree = "<group>"; };
++		CAC5C82EDD2A40DC7E8770D3 /* XCUIElement+AVFind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIElement+AVFind.h"; sourceTree = "<group>"; };
+ 		EE006EAC1EB99B15006900A4 /* FBElementVisibilityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBElementVisibilityTests.m; sourceTree = "<group>"; };
+ 		EE006EAE1EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCElementSnapshot+FBHitPoint.h"; sourceTree = "<group>"; };
+ 		EE006EAF1EBA1AA9006900A4 /* XCElementSnapshot+FBHitPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCElementSnapshot+FBHitPoint.m"; sourceTree = "<group>"; };
+@@ -910,6 +914,8 @@
+ 				71B49EC61ED1A58100D51AD6 /* XCUIElement+FBUID.m */,
+ 				EEE376471D59FAE900ED88DD /* XCUIElement+FBWebDriverAttributes.h */,
+ 				EEE376481D59FAE900ED88DD /* XCUIElement+FBWebDriverAttributes.m */,
++				CAC5C2403DBE2BCFECA8D62D /* XCUIElement+AVFind.m */,
++				CAC5C82EDD2A40DC7E8770D3 /* XCUIElement+AVFind.h */,
+ 			);
+ 			name = Categories;
+ 			path = WebDriverAgentLib/Categories;
+@@ -1475,6 +1481,7 @@
+ 				EE35AD091E3B77D600A02D78 /* _XCInternalTestRun.h in Headers */,
+ 				712A0C871DA3E55D007D02E5 /* FBXPath-Private.h in Headers */,
+ 				EE35AD321E3B77D600A02D78 /* XCKeyMappingPath.h in Headers */,
++				CAC5C1087AA52D0B87587A31 /* XCUIElement+AVFind.h in Headers */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+@@ -1787,6 +1794,7 @@
+ 				EE35AD7C1E3B80C000A02D78 /* FBXCTestDaemonsProxy.m in Sources */,
+ 				EE158AB51CBD456F00A3E3F0 /* XCUIElement+FBTap.m in Sources */,
+ 				EE18883B1DA661C400307AA8 /* FBMathUtils.m in Sources */,
++				CAC5C33A253E3BA9A3C82ED0 /* XCUIElement+AVFind.m in Sources */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+AVFind.h b/WebDriverAgentLib/Categories/XCUIElement+AVFind.h
+index 921ea13c..78234f18 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+AVFind.h
++++ b/WebDriverAgentLib/Categories/XCUIElement+AVFind.h
+@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
+  @param locator requested xui locator
+  @return an array of descendants matching given cell index
+  */
+-- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator;
++- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator shouldReturnAfterFirstMatch:(BOOL)shouldReturnAfterFirstMatch;
+ 
+ @end
+ 
+diff --git a/WebDriverAgentLib/Categories/XCUIElement+AVFind.m b/WebDriverAgentLib/Categories/XCUIElement+AVFind.m
+index 1b0f05b5..1e3a7cfc 100644
+--- a/WebDriverAgentLib/Categories/XCUIElement+AVFind.m
++++ b/WebDriverAgentLib/Categories/XCUIElement+AVFind.m
+@@ -17,7 +17,7 @@
+ 
+ #pragma mark - Search by Xui
+ 
+-- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator
++- (NSArray<XCUIElement *> *)av_descendantsMatchingXui:(NSString *)locator shouldReturnAfterFirstMatch:(BOOL)shouldReturnAfterFirstMatch
+ {
+   // Делим локатор по вертикальной черте на элементы.
+   NSMutableArray *resultElementList = [NSMutableArray array];
+@@ -41,7 +41,14 @@
+ 
+ //  [resultElementList addObject:currentElement];
+   resultElementList = [NSMutableArray arrayWithArray:currentElements];
+-  return resultElementList.copy;
++    if (!shouldReturnAfterFirstMatch) {
++        return resultElementList;
++    }
++    XCUIElement *matchedElement = [resultElementList objectAtIndex:0];
++    if (matchedElement) {
++        return @[matchedElement];
++    }
++    return @[];
+ }
+ 
+ - (NSArray *)av_parseLocator:(NSString *)locator {
+@@ -147,34 +154,40 @@
+     }
+   }
+ 
++  XCUIElement *element;
++  NSArray<XCUIElement *> *resElements;
++  
+   // Применение условий к запросу элемента
+   if (hasPredicate) {
+     if ([predicate hasPrefix:@"id"]) {
+       NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
+       query = [query matchingIdentifier:explodeResult[1]];
++      element = [query firstMatch];
++      resElements = [NSArray arrayWithObject:element];
+     } else {
+       NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
+-      query = [query matchingPredicate:predicateObj];
+-    }
+-  }
+-
+-  // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
+-  XCUIElement *element;
+-  NSArray<XCUIElement *> *resElements;
+-  NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
+-  if (hasIndex) {
+-    if ([index isEqualToString:@"last"]) {
+-      element = [elements lastObject];
++//      query = [query matchingPredicate:predicateObj];
++      element = [query elementMatchingPredicate:predicateObj];
+       resElements = [NSArray arrayWithObject:element];
+-    } else {
+-        if ([elements count] > (NSUInteger) [index integerValue]) {
+-            element = [elements objectAtIndex:[index intValue]];
+-            resElements = [NSArray arrayWithObject:element];
+-        }
+     }
+   } else {
++    // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
++    NSArray<XCUIElement *> *elements = [query allElementsBoundByIndex];
++    if (hasIndex) {
++      if ([index isEqualToString:@"last"]) {
++        element = [elements lastObject];
++        resElements = [NSArray arrayWithObject:element];
++      } else {
++        if ([elements count] > (NSUInteger) [index integerValue]) {
++          element = [elements objectAtIndex:[index intValue]];
++          resElements = [NSArray arrayWithObject:element];
++        }
++      }
++    } else {
+       resElements = elements;
++    }
+   }
++
+   return resElements;
+ }
+ 
+diff --git a/WebDriverAgentLib/Commands/FBFindElementCommands.m b/WebDriverAgentLib/Commands/FBFindElementCommands.m
+index ce5f8bdb..6996ff06 100644
+--- a/WebDriverAgentLib/Commands/FBFindElementCommands.m
++++ b/WebDriverAgentLib/Commands/FBFindElementCommands.m
+@@ -20,6 +20,7 @@
+ #import "FBSession.h"
+ #import "FBApplication.h"
+ #import "XCUIElement+FBFind.h"
++#import "XCUIElement+AVFind.h"
+ #import "XCUIElement+FBIsVisible.h"
+ #import "XCUIElement+FBClassChain.h"
+ 
+@@ -122,6 +123,8 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
+     elements = [element fb_descendantsMatchingClassName:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
+   } else if ([usingText isEqualToString:@"class chain"]) {
+     elements = [element fb_descendantsMatchingClassChain:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
++  } else if ([usingText isEqualToString:@"xui"]) {
++    elements = [element av_descendantsMatchingXui:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
+   } else if ([usingText isEqualToString:@"xpath"]) {
+     elements = [element fb_descendantsMatchingXPathQuery:value shouldReturnAfterFirstMatch:shouldReturnAfterFirstMatch];
+   } else if ([usingText isEqualToString:@"predicate string"]) {
+diff --git a/WebDriverAgentLib/Routing/FBSession.m b/WebDriverAgentLib/Routing/FBSession.m
+index 15d611df..1e910f03 100644
+--- a/WebDriverAgentLib/Routing/FBSession.m
++++ b/WebDriverAgentLib/Routing/FBSession.m
+@@ -32,7 +32,7 @@ NSString *const FBApplicationCrashedException = @"FBApplicationCrashedException"
+ static FBSession *_activeSession;
+ + (instancetype)activeSession
+ {
+-  return _activeSession ?: [FBSession sessionWithApplication:nil];
++  return _activeSession ?: nil;
+ }
+ 
+ + (void)killAll
