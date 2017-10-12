@@ -159,10 +159,14 @@
     if ([predicate hasPrefix:@"id"]) {
       NSArray *explodeResult = [predicate componentsSeparatedByString:@"="];
       query = [query matchingIdentifier:explodeResult[1]];
+    } else if ([predicate hasPrefix:@"contains"]) {
+      NSArray *explodeResult = [predicate componentsSeparatedByString:@"~"];
+      NSPredicate *predicateObj = [NSPredicate predicateWithFormat:explodeResult[1]];
+      query = [query containingPredicate:predicateObj];
     } else {
       NSPredicate *predicateObj = [NSPredicate predicateWithFormat:predicate];
       query = [query matchingPredicate:predicateObj];
-    }
+     }
   }
 
   // Применяем индекс к запросу или к массиву. Если индекс не указан, то берем первый элемент.
